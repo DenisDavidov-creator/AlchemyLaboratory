@@ -196,7 +196,7 @@ paths:
       parameters:
       - description: Ingredient ID
         in: path
-        name: recipe
+        name: id
         required: true
         type: integer
       - description: Quantity to add
@@ -204,7 +204,7 @@ paths:
         name: quantity
         required: true
         schema:
-          $ref: '#/definitions/dto.IngredientDTO'
+          $ref: '#/definitions/dto.IngredientAddDTO'
       produces:
       - application/json
       responses:
@@ -225,13 +225,6 @@ paths:
       - ingredients
   /recipes:
     get:
-      parameters:
-      - description: Recipe
-        in: body
-        name: recipe
-        required: true
-        schema:
-          $ref: '#/definitions/dto.IngredientDTO'
       produces:
       - application/json
       responses:

@@ -269,8 +269,12 @@ func (r *AlchemyRepository) GetIngredientsByRecipe(ctx context.Context, recipeID
 		WHERE 
 			recipe_id = $1
 	`
-
-	err := tx.SelectContext(ctx, &ingredients, query, recipeID)
+	var err error
+	if tx != nil {
+		err = tx.SelectContext(ctx, &ingredients, query, recipeID)
+	} else {
+		err = r.db.SelectContext(ctx, &ingredients, query, recipeID)
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("GetIngredientsByRecipe: %w", err)

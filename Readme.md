@@ -22,17 +22,21 @@ make up
 
 
 ## API Endpoints
-POST /ingredients
-GET  /ingredients
-PATCH  /ingredients/{id}
-POST /recipes
-GET  /recipes
-POST /brew
-GET  /brew/status
+- POST /ingredients
+- GET  /ingredients
+- PATCH  /ingredients/{id}
+- POST /recipes
+- GET  /recipes
+- POST /brew
+- GET  /brew/status
 
 ## Testing
+```
 make test           # run all tests
+```
+```
 make test-cover     # run with coverage report
+```
 
 ## Roadmap
 - [x] Monolith — single service, single database

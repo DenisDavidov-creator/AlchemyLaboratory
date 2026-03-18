@@ -18,7 +18,7 @@ down:
 
 # Migrations
 create-migrate:
-	migrate create -ext sql -dir db/migrations -seq create_initial_schema
+	migrate create -ext sql -dir db-service/internal/db/migrations -seq create_seeds
 
 migrate-up:
 	migrate -database ${DB_PATH} -path db/migrations up

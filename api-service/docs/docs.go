@@ -193,7 +193,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Ingredient ID",
-                        "name": "recipe",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -203,7 +203,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.IngredientDTO"
+                            "$ref": "#/definitions/dto.IngredientAddDTO"
                         }
                     }
                 ],
@@ -238,17 +238,6 @@ const docTemplate = `{
                     "recipes"
                 ],
                 "summary": "Get all recipes",
-                "parameters": [
-                    {
-                        "description": "Recipe",
-                        "name": "recipe",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.IngredientDTO"
-                        }
-                    }
-                ],
                 "responses": {
                     "201": {
                         "description": "Created",
