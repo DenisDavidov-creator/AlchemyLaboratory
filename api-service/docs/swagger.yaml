@@ -1,0 +1,279 @@
+basePath: /
+definitions:
+  dto.IngredientAddDTO:
+    properties:
+      quantity:
+        type: integer
+    type: object
+  dto.IngredientDTO:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        minLength: 2
+        type: string
+      quantity:
+        type: integer
+    required:
+    - name
+    type: object
+  dto.IngredientResponseDTO:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      quantity:
+        type: integer
+    type: object
+  dto.JobDTO:
+    properties:
+      details:
+        type: string
+      recipe_id:
+        type: integer
+    type: object
+  dto.JobStatusDTO:
+    properties:
+      status:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.JobUUIDDTO:
+    properties:
+      job_uuid:
+        type: string
+    type: object
+  dto.RecipeDTO:
+    properties:
+      brewing_time_seconds:
+        type: integer
+      description:
+        maxLength: 500
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.RecipeIngredientsDTO'
+        minItems: 1
+        type: array
+      name:
+        minLength: 2
+        type: string
+    required:
+    - ingredients
+    - name
+    type: object
+  dto.RecipeIngredientsDTO:
+    properties:
+      ingredient_id:
+        type: integer
+      quantity_needed:
+        type: integer
+    required:
+    - ingredient_id
+    - quantity_needed
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Website for brewing potions and elixirs.
+  title: AlchemicalLab
+  version: "2.0"
+paths:
+  /brew:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Brew
+        in: body
+        name: brew
+        required: true
+        schema:
+          $ref: '#/definitions/dto.JobDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JobUUIDDTO'
+        "400":
+          description: invalid request
+          schema:
+            type: object
+        "404":
+          description: recipe not found
+          schema:
+            type: object
+        "422":
+          description: ingredient not enough
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Started brewing a potion
+      tags:
+      - brewing
+  /brew/status:
+    get:
+      parameters:
+      - description: Job UUID
+        in: query
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JobStatusDTO'
+        "404":
+          description: job not found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Started to brewing potion
+      tags:
+      - brewing
+  /ingredients:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.IngredientResponseDTO'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Create and add new ingredients
+      tags:
+      - ingredients
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ingredient
+        in: body
+        name: ingredient
+        required: true
+        schema:
+          $ref: '#/definitions/dto.IngredientDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.IngredientResponseDTO'
+        "409":
+          description: already exists
+          schema:
+            type: string
+      summary: Create and add new ingredients
+      tags:
+      - ingredients
+  /ingredients/{id}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Ingredient ID
+        in: path
+        name: recipe
+        required: true
+        type: integer
+      - description: Quantity to add
+        in: body
+        name: quantity
+        required: true
+        schema:
+          $ref: '#/definitions/dto.IngredientDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.IngredientAddDTO'
+        "400":
+          description: invalid request
+          schema:
+            type: object
+        "404":
+          description: ingredient not found
+          schema:
+            type: object
+      summary: Add quantity to exist ingredient
+      tags:
+      - ingredients
+  /recipes:
+    get:
+      parameters:
+      - description: Recipe
+        in: body
+        name: recipe
+        required: true
+        schema:
+          $ref: '#/definitions/dto.IngredientDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/dto.IngredientResponseDTO'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Get all recipes
+      tags:
+      - recipes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Recipe
+        in: body
+        name: recipe
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecipeDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.IngredientResponseDTO'
+        "400":
+          description: invalid request
+          schema:
+            type: object
+        "409":
+          description: recipe already exists
+          schema:
+            type: object
+      summary: Create new recipe
+      tags:
+      - recipes
+swagger: "2.0"

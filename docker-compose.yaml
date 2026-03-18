@@ -1,16 +1,71 @@
 services:
   db:
     image: postgres:17-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
-    env_file: [.env]
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    ports:
-      - 5432:5432
+    env_file: ./db-service/.env
+    # environment:
+    #   - POSTGRES_USER=${POSTGRES_USER}
+    #   - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #   - POSTGRES_DB=${POSTGRES_DB}
+    # ports:
+    #   - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./db-service/internal/db/migrations:/migrations
+    command: ["-path", "/migrations", "-database","postgres://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}?sslmode=disable", "up"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+  api-service:
+    build:
+      context: .              
+      dockerfile: api-service/Dockerfile
+    env_file: ./api-service/.env
+    # environment:
+    #   - DB_SERVICE_URL=${DB_SERVICE_URL}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-service
+  db-service:
+    build:
+      context: .              
+      dockerfile: db-service/Dockerfile
+    env_file: ./db-service/.env
+    # ports:
+    #   - "8081:8081"
+    depends_on:
+      db: 
+        condition: service_healthy
+      migrate: 
+        condition: service_completed_successfully 
 
+  worker-service:
+    build:
+      context: .              
+      dockerfile: worker-service/Dockerfile
+    env_file: ./worker-service/.env
+    # ports:
+    #   - "8082:8082"
+    depends_on:
+      - db-service
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8090:8080"
+    environment:
+      - SWAGGER_JSON=/swagger/swagger.json
+    volumes:
+      - ./api-service/docs:/swagger
 volumes:
   postgres_data:

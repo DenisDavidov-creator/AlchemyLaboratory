@@ -1,1 +1,8 @@
+
+# Environment 
 .env
+**/.env
+
+# Test coverage files
+*.out
+*.html
