@@ -2,6 +2,7 @@ package service_test
 
 import (
 	dto "alla/shared/DTO"
+	"alla/shared/status"
 	"alla/worker-service/internal/boiler-worker/repository/mocks"
 	"alla/worker-service/internal/boiler-worker/service"
 	"context"
@@ -62,13 +63,13 @@ func TestBoiled(t *testing.T) {
 		switch tt.name {
 		case "Success":
 			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
-			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: "Completed"}).Return(tt.setStatusErr)
+			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
 		case "Error - get time":
 			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
 			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: "failed"}).Return(tt.setStatusErr)
 		case "Error - set status":
 			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
-			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: "Completed"}).Return(tt.setStatusErr)
+			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
 		}
 
 		err := workerServ.Boiled(context.Background(), tt.uuid)

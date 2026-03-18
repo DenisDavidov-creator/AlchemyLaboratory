@@ -5,9 +5,9 @@ export
 # initialization
 init:
 	cp .env.example .env
-	cp .env.example api-service.env
-	cp .env.example db-service.env
-	cp .env.example worker-service.env
+	cp .env.example api-service/.env
+	cp .env.example db-service/.env
+	cp .env.example worker-service/.env
 
 # docker 
 up:
@@ -34,8 +34,19 @@ mock:
 	cd worker-service && go generate ./...
 
 
-# testing in html 
+# testing
+
+test:
+	cd api-service && go test ./...
+	cd db-service && go test ./...
+	cd worker-service && go test ./...
+
 test-cover:
+	cd api-service && go test -cover ./...
+	cd db-service && go test -cover ./...
+	cd worker-service && go test -cover ./...
+
+test-cover-html:
 	cd api-service && go test -coverprofile=../coverage-api.out ./... && go tool cover -html=../coverage-api.out -o ../coverage-api.html
 	cd db-service && go test -coverprofile=../coverage-db.out ./... && go tool cover -html=../coverage-db.out -o ../coverage-db.html
 	cd worker-service && go test -coverprofile=../coverage-worker.out ./... && go tool cover -html=../coverage-worker.out -o ../coverage-worker.html

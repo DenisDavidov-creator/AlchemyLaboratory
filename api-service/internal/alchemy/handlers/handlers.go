@@ -174,7 +174,7 @@ func (h *GuildHandler) ShowRecipes(w http.ResponseWriter, r *http.Request) {
 // @Tags         ingredients
 // @Accept       json
 // @Produce      json
-// @Param        id path int                  true "Ingredient ID"
+// @Param        id         path int                  true "Ingredient ID"
 // @Param        quantity   body dto.IngredientAddDTO true "Quantity to add"
 // @Success      200 {object} dto.IngredientAddDTO
 // @Failure      400 {object} object "invalid request"

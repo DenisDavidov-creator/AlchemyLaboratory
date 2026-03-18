@@ -13,7 +13,7 @@
 
 ## How to run
 ```
-make init
+make init      #initialization .env by example
 make up
 ```
 ## swagger location 
@@ -31,11 +31,15 @@ make up
 - GET  /brew/status
 
 ## Testing
+
 ```
-make test           # run all tests
+make test                # run tests
 ```
 ```
-make test-cover     # run with coverage report
+make test-cover          # run with coverage report
+```
+```
+make test-cover-html     # run with coverage report in html
 ```
 
 ## Roadmap
