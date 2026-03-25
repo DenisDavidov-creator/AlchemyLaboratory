@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/subosito/gotenv v1.6.0
 	github.com/swaggo/swag v1.16.6
+	google.golang.org/grpc v1.79.3
 )
 
 require (
@@ -22,9 +23,11 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	golang.org/x/mod v0.30.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 

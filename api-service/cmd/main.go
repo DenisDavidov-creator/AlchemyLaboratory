@@ -9,10 +9,14 @@ import (
 	brewingService "alla/api-service/internal/brewing/service"
 	"alla/api-service/internal/server"
 
+	pb "alla/shared/pb"
+
 	"log"
 	"os"
 
 	"github.com/subosito/gotenv"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @title           AlchemicalLab
@@ -28,9 +32,18 @@ func main() {
 	}
 
 	DB_SERVICE_URL := os.Getenv("DB_SERVICE_URL")
+	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
 	WORKER_SERVICE_URL := os.Getenv("WORKER_SERVICE_URL")
 
-	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL)
+	conn, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to service by gRPC %v", err)
+	}
+	defer conn.Close()
+
+	ingredientClient := pb.NewIngredientServiceClient(conn)
+
+	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL, ingredientClient)
 	repoBrewing := brewingRepo.NewBrewingRepo(DB_SERVICE_URL, WORKER_SERVICE_URL)
 
 	serviceA := alchemyService.NewServiceAPI(repoA)

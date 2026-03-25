@@ -9,13 +9,16 @@ import (
 	brewingService "alla/db-service/internal/brewing/service"
 	"alla/db-service/internal/server"
 	"alla/db-service/internal/transactor"
+	"alla/shared/pb"
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/subosito/gotenv"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -32,10 +35,27 @@ func main() {
 
 	BrewingHandler := brewingHandler.NewBrewingHandler(BrewingService)
 	AlchemyHandler := alchemyHandler.NewAlchemyHandler(AlchemyService)
+	grpcAlchemyHandler := alchemyHandler.NeWGrpcAlchemicalHandler(AlchemyService)
+
+	//TODO add .env
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterIngredientServiceServer(grpcServer, grpcAlchemyHandler)
+
+	go func() {
+		log.Println("start gRPC")
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("gRPC not running: %v", err)
+		}
+	}()
 
 	DBServer := server.NewServer(AlchemyHandler, BrewingHandler)
 
-	err := DBServer.Run()
+	err = DBServer.Run()
 	if err != nil {
 		log.Fatal("Error: ", err)
 	}

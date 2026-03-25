@@ -1,0 +1,27 @@
+syntax = "proto3";
+package laboratory;
+option go_package = "shared/pb";
+
+service IngredientService {
+    rpc CreateIngredient(CreateIngredientRequest) returns (IngredientResponse);
+    rpc GetIngredients(Empty) returns (IngredientListResponse);
+}
+
+message CreateIngredientRequest {
+    string name        = 1;
+    string description = 2;
+    int32  quantity    = 3;
+}
+
+message IngredientResponse {
+    int32  id          = 1;
+    string name        = 2;
+    string description = 3;
+    int32  quantity    = 4;
+}
+
+message IngredientListResponse {
+    repeated IngredientResponse ingredietns = 1;
+}
+
+message Empty{}

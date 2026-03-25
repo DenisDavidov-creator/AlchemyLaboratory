@@ -9,12 +9,20 @@ init:
 	cp .env.example db-service/.env
 	cp .env.example worker-service/.env
 
+# go mod tidy
+go-mod-tidy:
+	cd api-service && go mod tidy
+	cd db-service && go mod tidy
+	cd worker-service && go mod tidy
+	cd shared && go mod tidy
+
 # docker 
 up:
 	docker compose up -d --build
 
 down: 
 	docker compose down 
+
 
 # Migrations
 create-migrate:
@@ -55,3 +63,8 @@ test-cover-html:
 # swagger
 swagger:
 	cd api-service && swag init -g cmd/main.go -o ./docs --parseDependency --parseInternal
+
+
+# protofiles 
+proto:
+	protoc --go_out=. --go-grpc_out=. shared/proto/*.proto
