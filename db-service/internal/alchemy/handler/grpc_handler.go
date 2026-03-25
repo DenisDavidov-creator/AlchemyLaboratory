@@ -7,6 +7,7 @@ import (
 	"alla/shared/pb"
 	"context"
 	"errors"
+	"log"
 
 	"google.golang.org/grpc/codes"
 	grpcStatus "google.golang.org/grpc/status"
@@ -51,7 +52,7 @@ func (h *GrpcAlchemyHandler) GetIngredients(ctx context.Context, empty *pb.Empty
 
 	ings, err := h.service.GetIngredients(ctx)
 	if err != nil {
-		return nil, err
+		return nil, grpcStatus.Error(codes.NotFound, err.Error())
 	}
 
 	var requestiIngs = pb.IngredientListResponse{}
@@ -65,4 +66,19 @@ func (h *GrpcAlchemyHandler) GetIngredients(ctx context.Context, empty *pb.Empty
 		})
 	}
 	return &requestiIngs, nil
+}
+
+func (h *GrpcAlchemyHandler) AddIngredient(ctx context.Context, req *pb.AddIngredientRequest) (*pb.Empty, error) {
+
+	err := h.service.AddIngredients(ctx, int(req.Id), int(req.Quantity))
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, errorList.ErrIngredientNotFound) {
+			return &pb.Empty{}, grpcStatus.Error(codes.NotFound, err.Error())
+		}
+		return &pb.Empty{}, grpcStatus.Error(codes.Internal, err.Error())
+
+	}
+
+	return &pb.Empty{}, nil
 }

@@ -191,25 +191,40 @@ func (r *RepositoryAPI) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDTO
 
 func (r *RepositoryAPI) AddIngredients(ctx context.Context, req dto.UpdateIngredientQuantityDTO) error {
 
-	body, err := json.Marshal(req)
+	_, err := r.ingredientClient.AddIngredient(ctx, &pb.AddIngredientRequest{
+		Id:       int32(req.ID),
+		Quantity: int32(req.Quantity),
+	})
+
 	if err != nil {
-		return fmt.Errorf("Repository: %w", err)
+		switch status.Code(err) {
+		case codes.NotFound:
+			return errorList.ErrIngredientNotFound
+		default:
+			return fmt.Errorf("AddIngredietns: unexpected StatusCode %d", status.Code(err))
+		}
 	}
 
-	url := fmt.Sprintf("%s/internal/ingredients/%d", r.baseURL, req.ID)
-	httpReq, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(body))
+	return nil
+	// body, err := json.Marshal(req)
+	// if err != nil {
+	// 	return fmt.Errorf("Repository: %w", err)
+	// }
 
-	httpReq.Header.Set("Content-type", "application/json")
+	// url := fmt.Sprintf("%s/internal/ingredients/%d", r.baseURL, req.ID)
+	// httpReq, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(body))
 
-	resp, err := r.httpClient.Do(httpReq)
+	// httpReq.Header.Set("Content-type", "application/json")
 
-	switch resp.StatusCode {
-	case http.StatusOK:
-		return nil
-	case http.StatusNotFound:
-		return errorList.ErrIngredientNotFound
-	default:
-		return fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
-	}
+	// resp, err := r.httpClient.Do(httpReq)
+
+	// switch resp.StatusCode {
+	// case http.StatusOK:
+	// 	return nil
+	// case http.StatusNotFound:
+	// 	return errorList.ErrIngredientNotFound
+	// default:
+	// 	return fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
+	// }
 
 }

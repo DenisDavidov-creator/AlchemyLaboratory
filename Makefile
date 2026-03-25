@@ -19,9 +19,19 @@ go-mod-tidy:
 # docker 
 up:
 	docker compose up -d --build
+up-db:
+	docker compose up -d --build db-service
+up-api:
+	docker compose up -d --build api-service
+up-worker:
+	docker compose up -d --build worker-service
 
 down: 
 	docker compose down 
+
+# logs
+logs-db:
+	docker compose logs db-service
 
 
 # Migrations

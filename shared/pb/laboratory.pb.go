@@ -21,6 +21,42 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Empty struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{0}
+}
+
 type CreateIngredientRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -32,7 +68,7 @@ type CreateIngredientRequest struct {
 
 func (x *CreateIngredientRequest) Reset() {
 	*x = CreateIngredientRequest{}
-	mi := &file_shared_proto_laboratory_proto_msgTypes[0]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +80,7 @@ func (x *CreateIngredientRequest) String() string {
 func (*CreateIngredientRequest) ProtoMessage() {}
 
 func (x *CreateIngredientRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_laboratory_proto_msgTypes[0]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +93,7 @@ func (x *CreateIngredientRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateIngredientRequest.ProtoReflect.Descriptor instead.
 func (*CreateIngredientRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{0}
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CreateIngredientRequest) GetName() string {
@@ -93,7 +129,7 @@ type IngredientResponse struct {
 
 func (x *IngredientResponse) Reset() {
 	*x = IngredientResponse{}
-	mi := &file_shared_proto_laboratory_proto_msgTypes[1]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -105,7 +141,7 @@ func (x *IngredientResponse) String() string {
 func (*IngredientResponse) ProtoMessage() {}
 
 func (x *IngredientResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_laboratory_proto_msgTypes[1]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,7 +154,7 @@ func (x *IngredientResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngredientResponse.ProtoReflect.Descriptor instead.
 func (*IngredientResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{1}
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *IngredientResponse) GetId() int32 {
@@ -158,7 +194,7 @@ type IngredientListResponse struct {
 
 func (x *IngredientListResponse) Reset() {
 	*x = IngredientListResponse{}
-	mi := &file_shared_proto_laboratory_proto_msgTypes[2]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -170,7 +206,7 @@ func (x *IngredientListResponse) String() string {
 func (*IngredientListResponse) ProtoMessage() {}
 
 func (x *IngredientListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_laboratory_proto_msgTypes[2]
+	mi := &file_shared_proto_laboratory_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -183,7 +219,7 @@ func (x *IngredientListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngredientListResponse.ProtoReflect.Descriptor instead.
 func (*IngredientListResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{2}
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *IngredientListResponse) GetIngredietns() []*IngredientResponse {
@@ -193,27 +229,29 @@ func (x *IngredientListResponse) GetIngredietns() []*IngredientResponse {
 	return nil
 }
 
-type Empty struct {
+type AddIngredientRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Empty) Reset() {
-	*x = Empty{}
-	mi := &file_shared_proto_laboratory_proto_msgTypes[3]
+func (x *AddIngredientRequest) Reset() {
+	*x = AddIngredientRequest{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Empty) String() string {
+func (x *AddIngredientRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Empty) ProtoMessage() {}
+func (*AddIngredientRequest) ProtoMessage() {}
 
-func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_laboratory_proto_msgTypes[3]
+func (x *AddIngredientRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -224,9 +262,23 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
-func (*Empty) Descriptor() ([]byte, []int) {
-	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use AddIngredientRequest.ProtoReflect.Descriptor instead.
+func (*AddIngredientRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddIngredientRequest) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *AddIngredientRequest) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
 }
 
 var File_shared_proto_laboratory_proto protoreflect.FileDescriptor
@@ -234,7 +286,8 @@ var File_shared_proto_laboratory_proto protoreflect.FileDescriptor
 const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\n" +
 	"\x1dshared/proto/laboratory.proto\x12\n" +
-	"laboratory\"k\n" +
+	"laboratory\"\a\n" +
+	"\x05Empty\"k\n" +
 	"\x17CreateIngredientRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1a\n" +
@@ -245,11 +298,14 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bquantity\x18\x04 \x01(\x05R\bquantity\"Z\n" +
 	"\x16IngredientListResponse\x12@\n" +
-	"\vingredietns\x18\x01 \x03(\v2\x1e.laboratory.IngredientResponseR\vingredietns\"\a\n" +
-	"\x05Empty2\xb5\x01\n" +
+	"\vingredietns\x18\x01 \x03(\v2\x1e.laboratory.IngredientResponseR\vingredietns\"B\n" +
+	"\x14AddIngredientRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity2\xfb\x01\n" +
 	"\x11IngredientService\x12W\n" +
 	"\x10CreateIngredient\x12#.laboratory.CreateIngredientRequest\x1a\x1e.laboratory.IngredientResponse\x12G\n" +
-	"\x0eGetIngredients\x12\x11.laboratory.Empty\x1a\".laboratory.IngredientListResponseB\vZ\tshared/pbb\x06proto3"
+	"\x0eGetIngredients\x12\x11.laboratory.Empty\x1a\".laboratory.IngredientListResponse\x12D\n" +
+	"\rAddIngredient\x12 .laboratory.AddIngredientRequest\x1a\x11.laboratory.EmptyB\vZ\tshared/pbb\x06proto3"
 
 var (
 	file_shared_proto_laboratory_proto_rawDescOnce sync.Once
@@ -263,21 +319,24 @@ func file_shared_proto_laboratory_proto_rawDescGZIP() []byte {
 	return file_shared_proto_laboratory_proto_rawDescData
 }
 
-var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_shared_proto_laboratory_proto_goTypes = []any{
-	(*CreateIngredientRequest)(nil), // 0: laboratory.CreateIngredientRequest
-	(*IngredientResponse)(nil),      // 1: laboratory.IngredientResponse
-	(*IngredientListResponse)(nil),  // 2: laboratory.IngredientListResponse
-	(*Empty)(nil),                   // 3: laboratory.Empty
+	(*Empty)(nil),                   // 0: laboratory.Empty
+	(*CreateIngredientRequest)(nil), // 1: laboratory.CreateIngredientRequest
+	(*IngredientResponse)(nil),      // 2: laboratory.IngredientResponse
+	(*IngredientListResponse)(nil),  // 3: laboratory.IngredientListResponse
+	(*AddIngredientRequest)(nil),    // 4: laboratory.AddIngredientRequest
 }
 var file_shared_proto_laboratory_proto_depIdxs = []int32{
-	1, // 0: laboratory.IngredientListResponse.ingredietns:type_name -> laboratory.IngredientResponse
-	0, // 1: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
-	3, // 2: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
-	1, // 3: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
-	2, // 4: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	2, // 0: laboratory.IngredientListResponse.ingredietns:type_name -> laboratory.IngredientResponse
+	1, // 1: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
+	0, // 2: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
+	4, // 3: laboratory.IngredientService.AddIngredient:input_type -> laboratory.AddIngredientRequest
+	2, // 4: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
+	3, // 5: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
+	0, // 6: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -294,7 +353,7 @@ func file_shared_proto_laboratory_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_laboratory_proto_rawDesc), len(file_shared_proto_laboratory_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

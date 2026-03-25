@@ -5,7 +5,9 @@ option go_package = "shared/pb";
 service IngredientService {
     rpc CreateIngredient(CreateIngredientRequest) returns (IngredientResponse);
     rpc GetIngredients(Empty) returns (IngredientListResponse);
+    rpc AddIngredient(AddIngredientRequest) returns (Empty);
 }
+message Empty{}
 
 message CreateIngredientRequest {
     string name        = 1;
@@ -24,4 +26,9 @@ message IngredientListResponse {
     repeated IngredientResponse ingredietns = 1;
 }
 
-message Empty{}
+message AddIngredientRequest {
+    int32 id           = 1;
+    int32 quantity     = 2;
+}
+
+

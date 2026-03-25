@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	IngredientService_CreateIngredient_FullMethodName = "/laboratory.IngredientService/CreateIngredient"
 	IngredientService_GetIngredients_FullMethodName   = "/laboratory.IngredientService/GetIngredients"
+	IngredientService_AddIngredient_FullMethodName    = "/laboratory.IngredientService/AddIngredient"
 )
 
 // IngredientServiceClient is the client API for IngredientService service.
@@ -29,6 +30,7 @@ const (
 type IngredientServiceClient interface {
 	CreateIngredient(ctx context.Context, in *CreateIngredientRequest, opts ...grpc.CallOption) (*IngredientResponse, error)
 	GetIngredients(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*IngredientListResponse, error)
+	AddIngredient(ctx context.Context, in *AddIngredientRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type ingredientServiceClient struct {
@@ -59,12 +61,23 @@ func (c *ingredientServiceClient) GetIngredients(ctx context.Context, in *Empty,
 	return out, nil
 }
 
+func (c *ingredientServiceClient) AddIngredient(ctx context.Context, in *AddIngredientRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, IngredientService_AddIngredient_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IngredientServiceServer is the server API for IngredientService service.
 // All implementations must embed UnimplementedIngredientServiceServer
 // for forward compatibility.
 type IngredientServiceServer interface {
 	CreateIngredient(context.Context, *CreateIngredientRequest) (*IngredientResponse, error)
 	GetIngredients(context.Context, *Empty) (*IngredientListResponse, error)
+	AddIngredient(context.Context, *AddIngredientRequest) (*Empty, error)
 	mustEmbedUnimplementedIngredientServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedIngredientServiceServer) CreateIngredient(context.Context, *C
 }
 func (UnimplementedIngredientServiceServer) GetIngredients(context.Context, *Empty) (*IngredientListResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetIngredients not implemented")
+}
+func (UnimplementedIngredientServiceServer) AddIngredient(context.Context, *AddIngredientRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method AddIngredient not implemented")
 }
 func (UnimplementedIngredientServiceServer) mustEmbedUnimplementedIngredientServiceServer() {}
 func (UnimplementedIngredientServiceServer) testEmbeddedByValue()                           {}
@@ -138,6 +154,24 @@ func _IngredientService_GetIngredients_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _IngredientService_AddIngredient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddIngredientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IngredientServiceServer).AddIngredient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IngredientService_AddIngredient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IngredientServiceServer).AddIngredient(ctx, req.(*AddIngredientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // IngredientService_ServiceDesc is the grpc.ServiceDesc for IngredientService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var IngredientService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIngredients",
 			Handler:    _IngredientService_GetIngredients_Handler,
+		},
+		{
+			MethodName: "AddIngredient",
+			Handler:    _IngredientService_AddIngredient_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

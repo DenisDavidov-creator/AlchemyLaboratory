@@ -16,7 +16,7 @@ type AlchemyServiceInterface interface {
 	GetIngredients(context.Context) ([]dto.IngredientResponseDTO, error)
 	PostRecipe(context.Context, dto.RecipeDTO) (*dto.RecipeResponseDTO, error)
 	GetRecipes(context.Context) ([]dto.RecipeResponseDTO, error)
-	AddIngredients(context.Context, int, int) error
+	AddIngredients(ctx context.Context, ingID int, quantity int) error
 }
 
 type AclhemyService struct {
