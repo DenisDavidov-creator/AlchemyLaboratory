@@ -7,6 +7,11 @@ service IngredientService {
     rpc GetIngredients(Empty) returns (IngredientListResponse);
     rpc AddIngredient(AddIngredientRequest) returns (Empty);
 }
+service RecipesService {
+    rpc CreateRecipe(PostRecipeRequest) returns (RecipeResponse);
+    rpc GetRecipes(Empty) returns (RecipeListResponse);
+}
+
 message Empty{}
 
 message CreateIngredientRequest {
@@ -32,3 +37,27 @@ message AddIngredientRequest {
 }
 
 
+// recipes 
+message RecipeIngredients {
+    int32 ingredietnID    = 1;
+    int32 queuntityNeeded = 2;
+}
+
+message PostRecipeRequest {
+    string name                        = 1;
+    string description                 = 2;
+    int32 brewingTimeSeconds           = 3;
+    repeated RecipeIngredients recIngs = 4;
+}
+
+message RecipeResponse {
+    int32 id                           = 1;
+    string name                        = 2;
+    string description                 = 3;
+    int32 brewingTimeSeconds           = 4;
+    repeated RecipeIngredients recIngs = 5;
+}
+
+message RecipeListResponse {
+    repeated RecipeResponse recipes = 1;
+}

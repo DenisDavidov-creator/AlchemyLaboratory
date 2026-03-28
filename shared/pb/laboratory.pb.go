@@ -281,6 +281,247 @@ func (x *AddIngredientRequest) GetQuantity() int32 {
 	return 0
 }
 
+// recipes
+type RecipeIngredients struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	IngredietnID    int32                  `protobuf:"varint,1,opt,name=ingredietnID,proto3" json:"ingredietnID,omitempty"`
+	QueuntityNeeded int32                  `protobuf:"varint,2,opt,name=queuntityNeeded,proto3" json:"queuntityNeeded,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RecipeIngredients) Reset() {
+	*x = RecipeIngredients{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecipeIngredients) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecipeIngredients) ProtoMessage() {}
+
+func (x *RecipeIngredients) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecipeIngredients.ProtoReflect.Descriptor instead.
+func (*RecipeIngredients) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RecipeIngredients) GetIngredietnID() int32 {
+	if x != nil {
+		return x.IngredietnID
+	}
+	return 0
+}
+
+func (x *RecipeIngredients) GetQueuntityNeeded() int32 {
+	if x != nil {
+		return x.QueuntityNeeded
+	}
+	return 0
+}
+
+type PostRecipeRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Name               string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description        string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	BrewingTimeSeconds int32                  `protobuf:"varint,3,opt,name=brewingTimeSeconds,proto3" json:"brewingTimeSeconds,omitempty"`
+	RecIngs            []*RecipeIngredients   `protobuf:"bytes,4,rep,name=recIngs,proto3" json:"recIngs,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *PostRecipeRequest) Reset() {
+	*x = PostRecipeRequest{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostRecipeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostRecipeRequest) ProtoMessage() {}
+
+func (x *PostRecipeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostRecipeRequest.ProtoReflect.Descriptor instead.
+func (*PostRecipeRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PostRecipeRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PostRecipeRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *PostRecipeRequest) GetBrewingTimeSeconds() int32 {
+	if x != nil {
+		return x.BrewingTimeSeconds
+	}
+	return 0
+}
+
+func (x *PostRecipeRequest) GetRecIngs() []*RecipeIngredients {
+	if x != nil {
+		return x.RecIngs
+	}
+	return nil
+}
+
+type RecipeResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name               string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description        string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	BrewingTimeSeconds int32                  `protobuf:"varint,4,opt,name=brewingTimeSeconds,proto3" json:"brewingTimeSeconds,omitempty"`
+	RecIngs            []*RecipeIngredients   `protobuf:"bytes,5,rep,name=recIngs,proto3" json:"recIngs,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *RecipeResponse) Reset() {
+	*x = RecipeResponse{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecipeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecipeResponse) ProtoMessage() {}
+
+func (x *RecipeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecipeResponse.ProtoReflect.Descriptor instead.
+func (*RecipeResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RecipeResponse) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *RecipeResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *RecipeResponse) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *RecipeResponse) GetBrewingTimeSeconds() int32 {
+	if x != nil {
+		return x.BrewingTimeSeconds
+	}
+	return 0
+}
+
+func (x *RecipeResponse) GetRecIngs() []*RecipeIngredients {
+	if x != nil {
+		return x.RecIngs
+	}
+	return nil
+}
+
+type RecipeListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Recipes       []*RecipeResponse      `protobuf:"bytes,1,rep,name=recipes,proto3" json:"recipes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecipeListResponse) Reset() {
+	*x = RecipeListResponse{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecipeListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecipeListResponse) ProtoMessage() {}
+
+func (x *RecipeListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecipeListResponse.ProtoReflect.Descriptor instead.
+func (*RecipeListResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RecipeListResponse) GetRecipes() []*RecipeResponse {
+	if x != nil {
+		return x.Recipes
+	}
+	return nil
+}
+
 var File_shared_proto_laboratory_proto protoreflect.FileDescriptor
 
 const file_shared_proto_laboratory_proto_rawDesc = "" +
@@ -301,11 +542,31 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\vingredietns\x18\x01 \x03(\v2\x1e.laboratory.IngredientResponseR\vingredietns\"B\n" +
 	"\x14AddIngredientRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x05R\bquantity2\xfb\x01\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity\"a\n" +
+	"\x11RecipeIngredients\x12\"\n" +
+	"\fingredietnID\x18\x01 \x01(\x05R\fingredietnID\x12(\n" +
+	"\x0fqueuntityNeeded\x18\x02 \x01(\x05R\x0fqueuntityNeeded\"\xb2\x01\n" +
+	"\x11PostRecipeRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12.\n" +
+	"\x12brewingTimeSeconds\x18\x03 \x01(\x05R\x12brewingTimeSeconds\x127\n" +
+	"\arecIngs\x18\x04 \x03(\v2\x1d.laboratory.RecipeIngredientsR\arecIngs\"\xbf\x01\n" +
+	"\x0eRecipeResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12.\n" +
+	"\x12brewingTimeSeconds\x18\x04 \x01(\x05R\x12brewingTimeSeconds\x127\n" +
+	"\arecIngs\x18\x05 \x03(\v2\x1d.laboratory.RecipeIngredientsR\arecIngs\"J\n" +
+	"\x12RecipeListResponse\x124\n" +
+	"\arecipes\x18\x01 \x03(\v2\x1a.laboratory.RecipeResponseR\arecipes2\xfb\x01\n" +
 	"\x11IngredientService\x12W\n" +
 	"\x10CreateIngredient\x12#.laboratory.CreateIngredientRequest\x1a\x1e.laboratory.IngredientResponse\x12G\n" +
 	"\x0eGetIngredients\x12\x11.laboratory.Empty\x1a\".laboratory.IngredientListResponse\x12D\n" +
-	"\rAddIngredient\x12 .laboratory.AddIngredientRequest\x1a\x11.laboratory.EmptyB\vZ\tshared/pbb\x06proto3"
+	"\rAddIngredient\x12 .laboratory.AddIngredientRequest\x1a\x11.laboratory.Empty2\x9c\x01\n" +
+	"\x0eRecipesService\x12I\n" +
+	"\fCreateRecipe\x12\x1d.laboratory.PostRecipeRequest\x1a\x1a.laboratory.RecipeResponse\x12?\n" +
+	"\n" +
+	"GetRecipes\x12\x11.laboratory.Empty\x1a\x1e.laboratory.RecipeListResponseB\vZ\tshared/pbb\x06proto3"
 
 var (
 	file_shared_proto_laboratory_proto_rawDescOnce sync.Once
@@ -319,27 +580,38 @@ func file_shared_proto_laboratory_proto_rawDescGZIP() []byte {
 	return file_shared_proto_laboratory_proto_rawDescData
 }
 
-var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_shared_proto_laboratory_proto_goTypes = []any{
 	(*Empty)(nil),                   // 0: laboratory.Empty
 	(*CreateIngredientRequest)(nil), // 1: laboratory.CreateIngredientRequest
 	(*IngredientResponse)(nil),      // 2: laboratory.IngredientResponse
 	(*IngredientListResponse)(nil),  // 3: laboratory.IngredientListResponse
 	(*AddIngredientRequest)(nil),    // 4: laboratory.AddIngredientRequest
+	(*RecipeIngredients)(nil),       // 5: laboratory.RecipeIngredients
+	(*PostRecipeRequest)(nil),       // 6: laboratory.PostRecipeRequest
+	(*RecipeResponse)(nil),          // 7: laboratory.RecipeResponse
+	(*RecipeListResponse)(nil),      // 8: laboratory.RecipeListResponse
 }
 var file_shared_proto_laboratory_proto_depIdxs = []int32{
 	2, // 0: laboratory.IngredientListResponse.ingredietns:type_name -> laboratory.IngredientResponse
-	1, // 1: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
-	0, // 2: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
-	4, // 3: laboratory.IngredientService.AddIngredient:input_type -> laboratory.AddIngredientRequest
-	2, // 4: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
-	3, // 5: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
-	0, // 6: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5, // 1: laboratory.PostRecipeRequest.recIngs:type_name -> laboratory.RecipeIngredients
+	5, // 2: laboratory.RecipeResponse.recIngs:type_name -> laboratory.RecipeIngredients
+	7, // 3: laboratory.RecipeListResponse.recipes:type_name -> laboratory.RecipeResponse
+	1, // 4: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
+	0, // 5: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
+	4, // 6: laboratory.IngredientService.AddIngredient:input_type -> laboratory.AddIngredientRequest
+	6, // 7: laboratory.RecipesService.CreateRecipe:input_type -> laboratory.PostRecipeRequest
+	0, // 8: laboratory.RecipesService.GetRecipes:input_type -> laboratory.Empty
+	2, // 9: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
+	3, // 10: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
+	0, // 11: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
+	7, // 12: laboratory.RecipesService.CreateRecipe:output_type -> laboratory.RecipeResponse
+	8, // 13: laboratory.RecipesService.GetRecipes:output_type -> laboratory.RecipeListResponse
+	9, // [9:14] is the sub-list for method output_type
+	4, // [4:9] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_shared_proto_laboratory_proto_init() }
@@ -353,9 +625,9 @@ func file_shared_proto_laboratory_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_laboratory_proto_rawDesc), len(file_shared_proto_laboratory_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   9,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_shared_proto_laboratory_proto_goTypes,
 		DependencyIndexes: file_shared_proto_laboratory_proto_depIdxs,

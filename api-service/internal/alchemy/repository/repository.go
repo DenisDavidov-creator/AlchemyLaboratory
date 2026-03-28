@@ -4,10 +4,9 @@ import (
 	dto "alla/shared/DTO"
 	"alla/shared/errorList"
 	"alla/shared/pb"
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"google.golang.org/grpc/codes"
@@ -26,13 +25,15 @@ type RepositoryAPI struct {
 	baseURL          string
 	httpClient       *http.Client
 	ingredientClient pb.IngredientServiceClient
+	recipeClient     pb.RecipesServiceClient
 }
 
-func NewRepository(URL string, ingredientClient pb.IngredientServiceClient) *RepositoryAPI {
+func NewRepository(URL string, ingredientClient pb.IngredientServiceClient, recipeClient pb.RecipesServiceClient) *RepositoryAPI {
 	return &RepositoryAPI{
 		baseURL:          URL,
 		httpClient:       &http.Client{},
 		ingredientClient: ingredientClient,
+		recipeClient:     recipeClient,
 	}
 }
 
@@ -88,7 +89,7 @@ func (r *RepositoryAPI) PostIngredients(ctx context.Context, req dto.IngredientD
 func (r *RepositoryAPI) GetIngredients(ctx context.Context) ([]dto.IngredientResponseDTO, error) {
 
 	resp, err := r.ingredientClient.GetIngredients(ctx, &pb.Empty{})
-	if status.Code(err) == codes.Internal {
+	if err != nil {
 		return nil, fmt.Errorf("GetIngredients: unexpected statusCode %d", status.Code(err))
 	}
 	var ings = []dto.IngredientResponseDTO{}
@@ -129,63 +130,88 @@ func (r *RepositoryAPI) GetIngredients(ctx context.Context) ([]dto.IngredientRes
 }
 func (r *RepositoryAPI) PostRecipe(ctx context.Context, req dto.RecipeDTO) (*dto.RecipeResponseDTO, error) {
 
-	body, err := json.Marshal(req)
-	if err != nil {
-		return nil, errorList.ErrWrongJsonFormat
+	var reqRecipe = pb.PostRecipeRequest{
+		Name:               req.Name,
+		Description:        req.Description,
+		BrewingTimeSeconds: int32(req.BrewingTimeSeconds),
+	}
+	for _, value := range req.Ingredients {
+		reqRecipe.RecIngs = append(reqRecipe.RecIngs, &pb.RecipeIngredients{
+			IngredietnID:    int32(value.IngredientID),
+			QueuntityNeeded: int32(value.QuantityNeeded),
+		})
 	}
 
-	url := fmt.Sprintf("%s/internal/recipes", r.baseURL)
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
+	resp, err := r.recipeClient.CreateRecipe(ctx, &reqRecipe)
 
-	httpReq.Header.Set("Content-type", "application/json")
-
-	resp, err := r.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetRcipes: %w", err)
 	}
-	defer resp.Body.Close()
 
-	switch resp.StatusCode {
-	case http.StatusCreated:
-		var result dto.RecipeResponseDTO
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		if err != nil {
-			return nil, err
+	var ings = []dto.RecipeIngredientsDTO{}
+	for _, valueIng := range resp.RecIngs {
+		ing := dto.RecipeIngredientsDTO{
+			IngredientID:   int(valueIng.IngredietnID),
+			QuantityNeeded: int(valueIng.QueuntityNeeded),
 		}
-		return &result, nil
-	case http.StatusConflict:
-		return nil, errorList.ErrRecipeAlreadyExist
-	default:
-		return nil, fmt.Errorf("PostRecipe: unexpected StatusCode: %d", resp.StatusCode)
+		ings = append(ings, ing)
 	}
+
+	recipe := dto.RecipeResponseDTO{
+		ID:                 int(resp.Id),
+		Name:               resp.Name,
+		Description:        resp.Description,
+		BrewingTimeSeconds: int(resp.BrewingTimeSeconds),
+		Ingredients:        ings,
+	}
+
+	return &recipe, err
 }
 
 func (r *RepositoryAPI) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDTO, error) {
 
-	url := fmt.Sprintf("%s/internal/recipes", r.baseURL)
-	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-
-	httpReq.Header.Set("Content-type", "application/json")
-
-	resp, err := r.httpClient.Do(httpReq)
+	resp, err := r.recipeClient.GetRecipes(ctx, &pb.Empty{})
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	switch resp.StatusCode {
-	case http.StatusOK:
-		var result []dto.RecipeResponseDTO
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		if err != nil {
-			return nil, err
+		log.Println(err)
+		if status.Code(err) == codes.Internal {
+			return nil, errorList.ErrInconsistentData
 		}
-		return result, nil
-	case http.StatusBadRequest:
-		return nil, errorList.ErrInconsistentData
-	default:
-		return nil, fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
 	}
+	var results []dto.RecipeResponseDTO
+	for _, value := range resp.Recipes {
+
+		var ings = []dto.RecipeIngredientsDTO{}
+		for _, valueIng := range value.RecIngs {
+			ing := dto.RecipeIngredientsDTO{
+				IngredientID:   int(valueIng.IngredietnID),
+				QuantityNeeded: int(valueIng.QueuntityNeeded),
+			}
+			ings = append(ings, ing)
+		}
+
+		recipe := dto.RecipeResponseDTO{
+			ID:                 int(value.Id),
+			Name:               value.Name,
+			Description:        value.Description,
+			BrewingTimeSeconds: int(value.BrewingTimeSeconds),
+			Ingredients:        ings,
+		}
+		results = append(results, recipe)
+	}
+	return results, nil
+	// switch resp.StatusCode {
+	// case http.StatusOK:
+	// 	var result []dto.RecipeResponseDTO
+	// 	err = json.NewDecoder(resp.Body).Decode(&result)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return result, nil
+	// case http.StatusBadRequest:
+	// 	return nil, errorList.ErrInconsistentData
+	// default:
+	// 	return nil, fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
+	// }
 
 }
 

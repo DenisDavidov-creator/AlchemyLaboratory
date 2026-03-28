@@ -14,6 +14,7 @@ import (
 )
 
 type GrpcAlchemyHandler struct {
+	pb.UnimplementedRecipesServiceServer
 	pb.UnimplementedIngredientServiceServer
 	service service.AlchemyServiceInterface
 }
@@ -81,4 +82,78 @@ func (h *GrpcAlchemyHandler) AddIngredient(ctx context.Context, req *pb.AddIngre
 	}
 
 	return &pb.Empty{}, nil
+}
+
+func (h *GrpcAlchemyHandler) GetRecipes(ctx context.Context, empty *pb.Empty) (*pb.RecipeListResponse, error) {
+
+	recipes, err := h.service.GetRecipes(ctx)
+	if err != nil {
+		return nil, grpcStatus.Error(codes.NotFound, err.Error())
+	}
+
+	var requestiRecipes = pb.RecipeListResponse{}
+
+	for _, value := range recipes {
+
+		var recipe = pb.RecipeResponse{
+			Id:                 int32(value.ID),
+			Name:               value.Name,
+			Description:        value.Description,
+			BrewingTimeSeconds: int32(value.BrewingTimeSeconds),
+		}
+
+		for _, valueIng := range value.Ingredients {
+			ing := pb.RecipeIngredients{
+				IngredietnID:    int32(valueIng.IngredientID),
+				QueuntityNeeded: int32(valueIng.QuantityNeeded),
+			}
+			recipe.RecIngs = append(recipe.RecIngs, &ing)
+		}
+
+		requestiRecipes.Recipes = append(requestiRecipes.Recipes, &recipe)
+	}
+
+	return &requestiRecipes, nil
+}
+
+func (h *GrpcAlchemyHandler) CreateRecipe(ctx context.Context, req *pb.PostRecipeRequest) (*pb.RecipeResponse, error) {
+
+	var recipeReq = dto.RecipeDTO{
+		Name:               req.Name,
+		Description:        req.Description,
+		BrewingTimeSeconds: int(req.BrewingTimeSeconds),
+	}
+
+	for _, valueIng := range req.RecIngs {
+		ing := dto.RecipeIngredientsDTO{
+			IngredientID:   int(valueIng.IngredietnID),
+			QuantityNeeded: int(valueIng.QueuntityNeeded),
+		}
+		recipeReq.Ingredients = append(recipeReq.Ingredients, ing)
+	}
+
+	recipe, err := h.service.PostRecipe(ctx, recipeReq)
+	if err != nil {
+		if errors.Is(err, errorList.ErrRecipeAlreadyExist) {
+			return nil, grpcStatus.Error(codes.AlreadyExists, err.Error())
+		}
+		return nil, grpcStatus.Error(codes.Internal, err.Error())
+	}
+
+	var requestiRecipes = pb.RecipeResponse{
+		Id:                 int32(recipe.ID),
+		Name:               recipe.Name,
+		Description:        recipe.Description,
+		BrewingTimeSeconds: int32(recipe.BrewingTimeSeconds),
+	}
+
+	for _, valueIng := range recipe.Ingredients {
+		ing := pb.RecipeIngredients{
+			IngredietnID:    int32(valueIng.IngredientID),
+			QueuntityNeeded: int32(valueIng.QuantityNeeded),
+		}
+		requestiRecipes.RecIngs = append(requestiRecipes.RecIngs, &ing)
+	}
+
+	return &requestiRecipes, nil
 }

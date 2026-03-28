@@ -32,7 +32,10 @@ down:
 # logs
 logs-db:
 	docker compose logs db-service
-
+logs-api:
+	docker compose logs api-service
+logs-worker:
+	docker compose logs worker-service
 
 # Migrations
 create-migrate:

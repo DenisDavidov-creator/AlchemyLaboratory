@@ -42,8 +42,9 @@ func main() {
 	defer conn.Close()
 
 	ingredientClient := pb.NewIngredientServiceClient(conn)
+	recipeClient := pb.NewRecipesServiceClient(conn)
 
-	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL, ingredientClient)
+	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL, ingredientClient, recipeClient)
 	repoBrewing := brewingRepo.NewBrewingRepo(DB_SERVICE_URL, WORKER_SERVICE_URL)
 
 	serviceA := alchemyService.NewServiceAPI(repoA)

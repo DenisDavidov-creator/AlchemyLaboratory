@@ -45,6 +45,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterIngredientServiceServer(grpcServer, grpcAlchemyHandler)
+	pb.RegisterRecipesServiceServer(grpcServer, grpcAlchemyHandler)
 
 	go func() {
 		log.Println("start gRPC")

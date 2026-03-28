@@ -195,3 +195,143 @@ var IngredientService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "shared/proto/laboratory.proto",
 }
+
+const (
+	RecipesService_CreateRecipe_FullMethodName = "/laboratory.RecipesService/CreateRecipe"
+	RecipesService_GetRecipes_FullMethodName   = "/laboratory.RecipesService/GetRecipes"
+)
+
+// RecipesServiceClient is the client API for RecipesService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type RecipesServiceClient interface {
+	CreateRecipe(ctx context.Context, in *PostRecipeRequest, opts ...grpc.CallOption) (*RecipeResponse, error)
+	GetRecipes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*RecipeListResponse, error)
+}
+
+type recipesServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewRecipesServiceClient(cc grpc.ClientConnInterface) RecipesServiceClient {
+	return &recipesServiceClient{cc}
+}
+
+func (c *recipesServiceClient) CreateRecipe(ctx context.Context, in *PostRecipeRequest, opts ...grpc.CallOption) (*RecipeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecipeResponse)
+	err := c.cc.Invoke(ctx, RecipesService_CreateRecipe_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recipesServiceClient) GetRecipes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*RecipeListResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecipeListResponse)
+	err := c.cc.Invoke(ctx, RecipesService_GetRecipes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// RecipesServiceServer is the server API for RecipesService service.
+// All implementations must embed UnimplementedRecipesServiceServer
+// for forward compatibility.
+type RecipesServiceServer interface {
+	CreateRecipe(context.Context, *PostRecipeRequest) (*RecipeResponse, error)
+	GetRecipes(context.Context, *Empty) (*RecipeListResponse, error)
+	mustEmbedUnimplementedRecipesServiceServer()
+}
+
+// UnimplementedRecipesServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedRecipesServiceServer struct{}
+
+func (UnimplementedRecipesServiceServer) CreateRecipe(context.Context, *PostRecipeRequest) (*RecipeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateRecipe not implemented")
+}
+func (UnimplementedRecipesServiceServer) GetRecipes(context.Context, *Empty) (*RecipeListResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRecipes not implemented")
+}
+func (UnimplementedRecipesServiceServer) mustEmbedUnimplementedRecipesServiceServer() {}
+func (UnimplementedRecipesServiceServer) testEmbeddedByValue()                        {}
+
+// UnsafeRecipesServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RecipesServiceServer will
+// result in compilation errors.
+type UnsafeRecipesServiceServer interface {
+	mustEmbedUnimplementedRecipesServiceServer()
+}
+
+func RegisterRecipesServiceServer(s grpc.ServiceRegistrar, srv RecipesServiceServer) {
+	// If the following call panics, it indicates UnimplementedRecipesServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&RecipesService_ServiceDesc, srv)
+}
+
+func _RecipesService_CreateRecipe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostRecipeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecipesServiceServer).CreateRecipe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecipesService_CreateRecipe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecipesServiceServer).CreateRecipe(ctx, req.(*PostRecipeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecipesService_GetRecipes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecipesServiceServer).GetRecipes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecipesService_GetRecipes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecipesServiceServer).GetRecipes(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// RecipesService_ServiceDesc is the grpc.ServiceDesc for RecipesService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var RecipesService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "laboratory.RecipesService",
+	HandlerType: (*RecipesServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateRecipe",
+			Handler:    _RecipesService_CreateRecipe_Handler,
+		},
+		{
+			MethodName: "GetRecipes",
+			Handler:    _RecipesService_GetRecipes_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "shared/proto/laboratory.proto",
+}
