@@ -40,7 +40,7 @@ func (s *Server) Run() error {
 	internal.HandleFunc("/recipes", s.alchemyHandler.ShowRecipes).Methods(http.MethodGet)
 
 	internal.HandleFunc("/brew", s.brewingHandler.CreateJob).Methods(http.MethodPost)
-	internal.HandleFunc("/brew", s.brewingHandler.GetJobByUUID).Methods(http.MethodGet)
+	internal.HandleFunc("/brew", s.brewingHandler.StartBrewing).Methods(http.MethodGet)
 	internal.HandleFunc("/brew/status", s.brewingHandler.ChangeStatus).Methods(http.MethodPatch)
 	internal.HandleFunc("/brew/status", s.brewingHandler.GetStatus).Methods(http.MethodGet)
 

@@ -34,18 +34,27 @@ func main() {
 	DB_SERVICE_URL := os.Getenv("DB_SERVICE_URL")
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
 	WORKER_SERVICE_URL := os.Getenv("WORKER_SERVICE_URL")
+	WORKER_SERVICE_GRPC := os.Getenv("WORKER_SERVICE_GRPC")
 
-	conn, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connDB, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to service by gRPC %v", err)
 	}
-	defer conn.Close()
+	defer connDB.Close()
 
-	ingredientClient := pb.NewIngredientServiceClient(conn)
-	recipeClient := pb.NewRecipesServiceClient(conn)
+	connWorker, err := grpc.NewClient(WORKER_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("failed to connect to service by gRPC %v", err)
+	}
+	defer connWorker.Close()
+
+	ingredientClient := pb.NewIngredientServiceClient(connDB)
+	recipeClient := pb.NewRecipesServiceClient(connDB)
+	jobClient := pb.NewJobServiceClient(connDB)
+	brewingClient := pb.NewBrewServiceClient(connWorker)
 
 	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL, ingredientClient, recipeClient)
-	repoBrewing := brewingRepo.NewBrewingRepo(DB_SERVICE_URL, WORKER_SERVICE_URL)
+	repoBrewing := brewingRepo.NewBrewingRepo(DB_SERVICE_URL, WORKER_SERVICE_URL, jobClient, brewingClient)
 
 	serviceA := alchemyService.NewServiceAPI(repoA)
 	serviceBrewing := brewingService.NewBrewingService(repoBrewing)

@@ -76,7 +76,7 @@ func (h *BrewingHandler) CreateJob(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *BrewingHandler) GetJobByUUID(w http.ResponseWriter, r *http.Request) {
+func (h *BrewingHandler) StartBrewing(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	var req dto.JobUUIDDTO
@@ -86,7 +86,7 @@ func (h *BrewingHandler) GetJobByUUID(w http.ResponseWriter, r *http.Request) {
 		h.sendError(w, fmt.Errorf("Handler: %w", err))
 	}
 
-	res, err := h.service.GetJobByUUID(ctx, req)
+	res, err := h.service.StartBrewing(ctx, req)
 
 	if err != nil {
 		h.sendError(w, fmt.Errorf("Handler : %w", err))

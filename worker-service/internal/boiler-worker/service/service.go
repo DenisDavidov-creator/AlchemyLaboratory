@@ -24,7 +24,7 @@ func NewBoilerWorker(repo repository.RepositoryBrewingInterface) *ServiceWorker 
 }
 
 func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
-	timeSeconds, err := w.repo.GetJobByUUID(ctx, uuid)
+	timeSeconds, err := w.repo.StartBrewing(ctx, uuid)
 	changeStatus := dto.JobStatusDTO{
 		UUID:   uuid.JobUUID,
 		Status: status.StatusFailed,

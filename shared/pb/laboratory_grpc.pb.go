@@ -335,3 +335,321 @@ var RecipesService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "shared/proto/laboratory.proto",
 }
+
+const (
+	JobService_PostJob_FullMethodName       = "/laboratory.JobService/PostJob"
+	JobService_GetBrewStatus_FullMethodName = "/laboratory.JobService/GetBrewStatus"
+	JobService_ChangeStatus_FullMethodName  = "/laboratory.JobService/ChangeStatus"
+	JobService_StartBrewing_FullMethodName  = "/laboratory.JobService/StartBrewing"
+)
+
+// JobServiceClient is the client API for JobService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type JobServiceClient interface {
+	PostJob(ctx context.Context, in *PostJobRequest, opts ...grpc.CallOption) (*JobUUID, error)
+	GetBrewStatus(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*JobStatusResponse, error)
+	ChangeStatus(ctx context.Context, in *ChangeJobStatus, opts ...grpc.CallOption) (*Empty, error)
+	StartBrewing(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*JobTime, error)
+}
+
+type jobServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewJobServiceClient(cc grpc.ClientConnInterface) JobServiceClient {
+	return &jobServiceClient{cc}
+}
+
+func (c *jobServiceClient) PostJob(ctx context.Context, in *PostJobRequest, opts ...grpc.CallOption) (*JobUUID, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobUUID)
+	err := c.cc.Invoke(ctx, JobService_PostJob_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobServiceClient) GetBrewStatus(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*JobStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobStatusResponse)
+	err := c.cc.Invoke(ctx, JobService_GetBrewStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobServiceClient) ChangeStatus(ctx context.Context, in *ChangeJobStatus, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, JobService_ChangeStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobServiceClient) StartBrewing(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*JobTime, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(JobTime)
+	err := c.cc.Invoke(ctx, JobService_StartBrewing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// JobServiceServer is the server API for JobService service.
+// All implementations must embed UnimplementedJobServiceServer
+// for forward compatibility.
+type JobServiceServer interface {
+	PostJob(context.Context, *PostJobRequest) (*JobUUID, error)
+	GetBrewStatus(context.Context, *JobUUID) (*JobStatusResponse, error)
+	ChangeStatus(context.Context, *ChangeJobStatus) (*Empty, error)
+	StartBrewing(context.Context, *JobUUID) (*JobTime, error)
+	mustEmbedUnimplementedJobServiceServer()
+}
+
+// UnimplementedJobServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedJobServiceServer struct{}
+
+func (UnimplementedJobServiceServer) PostJob(context.Context, *PostJobRequest) (*JobUUID, error) {
+	return nil, status.Error(codes.Unimplemented, "method PostJob not implemented")
+}
+func (UnimplementedJobServiceServer) GetBrewStatus(context.Context, *JobUUID) (*JobStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetBrewStatus not implemented")
+}
+func (UnimplementedJobServiceServer) ChangeStatus(context.Context, *ChangeJobStatus) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method ChangeStatus not implemented")
+}
+func (UnimplementedJobServiceServer) StartBrewing(context.Context, *JobUUID) (*JobTime, error) {
+	return nil, status.Error(codes.Unimplemented, "method StartBrewing not implemented")
+}
+func (UnimplementedJobServiceServer) mustEmbedUnimplementedJobServiceServer() {}
+func (UnimplementedJobServiceServer) testEmbeddedByValue()                    {}
+
+// UnsafeJobServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to JobServiceServer will
+// result in compilation errors.
+type UnsafeJobServiceServer interface {
+	mustEmbedUnimplementedJobServiceServer()
+}
+
+func RegisterJobServiceServer(s grpc.ServiceRegistrar, srv JobServiceServer) {
+	// If the following call panics, it indicates UnimplementedJobServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&JobService_ServiceDesc, srv)
+}
+
+func _JobService_PostJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).PostJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_PostJob_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).PostJob(ctx, req.(*PostJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobService_GetBrewStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobUUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).GetBrewStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_GetBrewStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).GetBrewStatus(ctx, req.(*JobUUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobService_ChangeStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeJobStatus)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).ChangeStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_ChangeStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).ChangeStatus(ctx, req.(*ChangeJobStatus))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobService_StartBrewing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobUUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).StartBrewing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: JobService_StartBrewing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).StartBrewing(ctx, req.(*JobUUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// JobService_ServiceDesc is the grpc.ServiceDesc for JobService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var JobService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "laboratory.JobService",
+	HandlerType: (*JobServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PostJob",
+			Handler:    _JobService_PostJob_Handler,
+		},
+		{
+			MethodName: "GetBrewStatus",
+			Handler:    _JobService_GetBrewStatus_Handler,
+		},
+		{
+			MethodName: "ChangeStatus",
+			Handler:    _JobService_ChangeStatus_Handler,
+		},
+		{
+			MethodName: "StartBrewing",
+			Handler:    _JobService_StartBrewing_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "shared/proto/laboratory.proto",
+}
+
+const (
+	BrewService_Brew_FullMethodName = "/laboratory.BrewService/Brew"
+)
+
+// BrewServiceClient is the client API for BrewService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type BrewServiceClient interface {
+	Brew(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type brewServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewBrewServiceClient(cc grpc.ClientConnInterface) BrewServiceClient {
+	return &brewServiceClient{cc}
+}
+
+func (c *brewServiceClient) Brew(ctx context.Context, in *JobUUID, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, BrewService_Brew_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// BrewServiceServer is the server API for BrewService service.
+// All implementations must embed UnimplementedBrewServiceServer
+// for forward compatibility.
+type BrewServiceServer interface {
+	Brew(context.Context, *JobUUID) (*Empty, error)
+	mustEmbedUnimplementedBrewServiceServer()
+}
+
+// UnimplementedBrewServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedBrewServiceServer struct{}
+
+func (UnimplementedBrewServiceServer) Brew(context.Context, *JobUUID) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method Brew not implemented")
+}
+func (UnimplementedBrewServiceServer) mustEmbedUnimplementedBrewServiceServer() {}
+func (UnimplementedBrewServiceServer) testEmbeddedByValue()                     {}
+
+// UnsafeBrewServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BrewServiceServer will
+// result in compilation errors.
+type UnsafeBrewServiceServer interface {
+	mustEmbedUnimplementedBrewServiceServer()
+}
+
+func RegisterBrewServiceServer(s grpc.ServiceRegistrar, srv BrewServiceServer) {
+	// If the following call panics, it indicates UnimplementedBrewServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&BrewService_ServiceDesc, srv)
+}
+
+func _BrewService_Brew_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobUUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrewServiceServer).Brew(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BrewService_Brew_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrewServiceServer).Brew(ctx, req.(*JobUUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// BrewService_ServiceDesc is the grpc.ServiceDesc for BrewService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var BrewService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "laboratory.BrewService",
+	HandlerType: (*BrewServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Brew",
+			Handler:    _BrewService_Brew_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "shared/proto/laboratory.proto",
+}

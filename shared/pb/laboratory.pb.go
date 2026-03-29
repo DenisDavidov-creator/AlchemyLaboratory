@@ -522,6 +522,242 @@ func (x *RecipeListResponse) GetRecipes() []*RecipeResponse {
 	return nil
 }
 
+type PostJobRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RecipeId      int32                  `protobuf:"varint,1,opt,name=recipeId,proto3" json:"recipeId,omitempty"`
+	Details       string                 `protobuf:"bytes,2,opt,name=details,proto3" json:"details,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostJobRequest) Reset() {
+	*x = PostJobRequest{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostJobRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostJobRequest) ProtoMessage() {}
+
+func (x *PostJobRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostJobRequest.ProtoReflect.Descriptor instead.
+func (*PostJobRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PostJobRequest) GetRecipeId() int32 {
+	if x != nil {
+		return x.RecipeId
+	}
+	return 0
+}
+
+func (x *PostJobRequest) GetDetails() string {
+	if x != nil {
+		return x.Details
+	}
+	return ""
+}
+
+type JobUUID struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	JobUUID       string                 `protobuf:"bytes,1,opt,name=jobUUID,proto3" json:"jobUUID,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *JobUUID) Reset() {
+	*x = JobUUID{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *JobUUID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JobUUID) ProtoMessage() {}
+
+func (x *JobUUID) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JobUUID.ProtoReflect.Descriptor instead.
+func (*JobUUID) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *JobUUID) GetJobUUID() string {
+	if x != nil {
+		return x.JobUUID
+	}
+	return ""
+}
+
+type JobStatusResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *JobStatusResponse) Reset() {
+	*x = JobStatusResponse{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *JobStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JobStatusResponse) ProtoMessage() {}
+
+func (x *JobStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JobStatusResponse.ProtoReflect.Descriptor instead.
+func (*JobStatusResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *JobStatusResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ChangeJobStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangeJobStatus) Reset() {
+	*x = ChangeJobStatus{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangeJobStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangeJobStatus) ProtoMessage() {}
+
+func (x *ChangeJobStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangeJobStatus.ProtoReflect.Descriptor instead.
+func (*ChangeJobStatus) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ChangeJobStatus) GetUuid() string {
+	if x != nil {
+		return x.Uuid
+	}
+	return ""
+}
+
+func (x *ChangeJobStatus) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type JobTime struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BrewingTime   int32                  `protobuf:"varint,1,opt,name=brewingTime,proto3" json:"brewingTime,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *JobTime) Reset() {
+	*x = JobTime{}
+	mi := &file_shared_proto_laboratory_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *JobTime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*JobTime) ProtoMessage() {}
+
+func (x *JobTime) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_laboratory_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use JobTime.ProtoReflect.Descriptor instead.
+func (*JobTime) Descriptor() ([]byte, []int) {
+	return file_shared_proto_laboratory_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *JobTime) GetBrewingTime() int32 {
+	if x != nil {
+		return x.BrewingTime
+	}
+	return 0
+}
+
 var File_shared_proto_laboratory_proto protoreflect.FileDescriptor
 
 const file_shared_proto_laboratory_proto_rawDesc = "" +
@@ -558,7 +794,19 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\x12brewingTimeSeconds\x18\x04 \x01(\x05R\x12brewingTimeSeconds\x127\n" +
 	"\arecIngs\x18\x05 \x03(\v2\x1d.laboratory.RecipeIngredientsR\arecIngs\"J\n" +
 	"\x12RecipeListResponse\x124\n" +
-	"\arecipes\x18\x01 \x03(\v2\x1a.laboratory.RecipeResponseR\arecipes2\xfb\x01\n" +
+	"\arecipes\x18\x01 \x03(\v2\x1a.laboratory.RecipeResponseR\arecipes\"F\n" +
+	"\x0ePostJobRequest\x12\x1a\n" +
+	"\brecipeId\x18\x01 \x01(\x05R\brecipeId\x12\x18\n" +
+	"\adetails\x18\x02 \x01(\tR\adetails\"#\n" +
+	"\aJobUUID\x12\x18\n" +
+	"\ajobUUID\x18\x01 \x01(\tR\ajobUUID\"+\n" +
+	"\x11JobStatusResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"=\n" +
+	"\x0fChangeJobStatus\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"+\n" +
+	"\aJobTime\x12 \n" +
+	"\vbrewingTime\x18\x01 \x01(\x05R\vbrewingTime2\xfb\x01\n" +
 	"\x11IngredientService\x12W\n" +
 	"\x10CreateIngredient\x12#.laboratory.CreateIngredientRequest\x1a\x1e.laboratory.IngredientResponse\x12G\n" +
 	"\x0eGetIngredients\x12\x11.laboratory.Empty\x1a\".laboratory.IngredientListResponse\x12D\n" +
@@ -566,7 +814,15 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\x0eRecipesService\x12I\n" +
 	"\fCreateRecipe\x12\x1d.laboratory.PostRecipeRequest\x1a\x1a.laboratory.RecipeResponse\x12?\n" +
 	"\n" +
-	"GetRecipes\x12\x11.laboratory.Empty\x1a\x1e.laboratory.RecipeListResponseB\vZ\tshared/pbb\x06proto3"
+	"GetRecipes\x12\x11.laboratory.Empty\x1a\x1e.laboratory.RecipeListResponse2\x87\x02\n" +
+	"\n" +
+	"JobService\x12:\n" +
+	"\aPostJob\x12\x1a.laboratory.PostJobRequest\x1a\x13.laboratory.JobUUID\x12C\n" +
+	"\rGetBrewStatus\x12\x13.laboratory.JobUUID\x1a\x1d.laboratory.JobStatusResponse\x12>\n" +
+	"\fChangeStatus\x12\x1b.laboratory.ChangeJobStatus\x1a\x11.laboratory.Empty\x128\n" +
+	"\fStartBrewing\x12\x13.laboratory.JobUUID\x1a\x13.laboratory.JobTime2=\n" +
+	"\vBrewService\x12.\n" +
+	"\x04Brew\x12\x13.laboratory.JobUUID\x1a\x11.laboratory.EmptyB\vZ\tshared/pbb\x06proto3"
 
 var (
 	file_shared_proto_laboratory_proto_rawDescOnce sync.Once
@@ -580,7 +836,7 @@ func file_shared_proto_laboratory_proto_rawDescGZIP() []byte {
 	return file_shared_proto_laboratory_proto_rawDescData
 }
 
-var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_shared_proto_laboratory_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_shared_proto_laboratory_proto_goTypes = []any{
 	(*Empty)(nil),                   // 0: laboratory.Empty
 	(*CreateIngredientRequest)(nil), // 1: laboratory.CreateIngredientRequest
@@ -591,27 +847,42 @@ var file_shared_proto_laboratory_proto_goTypes = []any{
 	(*PostRecipeRequest)(nil),       // 6: laboratory.PostRecipeRequest
 	(*RecipeResponse)(nil),          // 7: laboratory.RecipeResponse
 	(*RecipeListResponse)(nil),      // 8: laboratory.RecipeListResponse
+	(*PostJobRequest)(nil),          // 9: laboratory.PostJobRequest
+	(*JobUUID)(nil),                 // 10: laboratory.JobUUID
+	(*JobStatusResponse)(nil),       // 11: laboratory.JobStatusResponse
+	(*ChangeJobStatus)(nil),         // 12: laboratory.ChangeJobStatus
+	(*JobTime)(nil),                 // 13: laboratory.JobTime
 }
 var file_shared_proto_laboratory_proto_depIdxs = []int32{
-	2, // 0: laboratory.IngredientListResponse.ingredietns:type_name -> laboratory.IngredientResponse
-	5, // 1: laboratory.PostRecipeRequest.recIngs:type_name -> laboratory.RecipeIngredients
-	5, // 2: laboratory.RecipeResponse.recIngs:type_name -> laboratory.RecipeIngredients
-	7, // 3: laboratory.RecipeListResponse.recipes:type_name -> laboratory.RecipeResponse
-	1, // 4: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
-	0, // 5: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
-	4, // 6: laboratory.IngredientService.AddIngredient:input_type -> laboratory.AddIngredientRequest
-	6, // 7: laboratory.RecipesService.CreateRecipe:input_type -> laboratory.PostRecipeRequest
-	0, // 8: laboratory.RecipesService.GetRecipes:input_type -> laboratory.Empty
-	2, // 9: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
-	3, // 10: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
-	0, // 11: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
-	7, // 12: laboratory.RecipesService.CreateRecipe:output_type -> laboratory.RecipeResponse
-	8, // 13: laboratory.RecipesService.GetRecipes:output_type -> laboratory.RecipeListResponse
-	9, // [9:14] is the sub-list for method output_type
-	4, // [4:9] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2,  // 0: laboratory.IngredientListResponse.ingredietns:type_name -> laboratory.IngredientResponse
+	5,  // 1: laboratory.PostRecipeRequest.recIngs:type_name -> laboratory.RecipeIngredients
+	5,  // 2: laboratory.RecipeResponse.recIngs:type_name -> laboratory.RecipeIngredients
+	7,  // 3: laboratory.RecipeListResponse.recipes:type_name -> laboratory.RecipeResponse
+	1,  // 4: laboratory.IngredientService.CreateIngredient:input_type -> laboratory.CreateIngredientRequest
+	0,  // 5: laboratory.IngredientService.GetIngredients:input_type -> laboratory.Empty
+	4,  // 6: laboratory.IngredientService.AddIngredient:input_type -> laboratory.AddIngredientRequest
+	6,  // 7: laboratory.RecipesService.CreateRecipe:input_type -> laboratory.PostRecipeRequest
+	0,  // 8: laboratory.RecipesService.GetRecipes:input_type -> laboratory.Empty
+	9,  // 9: laboratory.JobService.PostJob:input_type -> laboratory.PostJobRequest
+	10, // 10: laboratory.JobService.GetBrewStatus:input_type -> laboratory.JobUUID
+	12, // 11: laboratory.JobService.ChangeStatus:input_type -> laboratory.ChangeJobStatus
+	10, // 12: laboratory.JobService.StartBrewing:input_type -> laboratory.JobUUID
+	10, // 13: laboratory.BrewService.Brew:input_type -> laboratory.JobUUID
+	2,  // 14: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
+	3,  // 15: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
+	0,  // 16: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
+	7,  // 17: laboratory.RecipesService.CreateRecipe:output_type -> laboratory.RecipeResponse
+	8,  // 18: laboratory.RecipesService.GetRecipes:output_type -> laboratory.RecipeListResponse
+	10, // 19: laboratory.JobService.PostJob:output_type -> laboratory.JobUUID
+	11, // 20: laboratory.JobService.GetBrewStatus:output_type -> laboratory.JobStatusResponse
+	0,  // 21: laboratory.JobService.ChangeStatus:output_type -> laboratory.Empty
+	13, // 22: laboratory.JobService.StartBrewing:output_type -> laboratory.JobTime
+	0,  // 23: laboratory.BrewService.Brew:output_type -> laboratory.Empty
+	14, // [14:24] is the sub-list for method output_type
+	4,  // [4:14] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_shared_proto_laboratory_proto_init() }
@@ -625,9 +896,9 @@ func file_shared_proto_laboratory_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_laboratory_proto_rawDesc), len(file_shared_proto_laboratory_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   14,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   4,
 		},
 		GoTypes:           file_shared_proto_laboratory_proto_goTypes,
 		DependencyIndexes: file_shared_proto_laboratory_proto_depIdxs,

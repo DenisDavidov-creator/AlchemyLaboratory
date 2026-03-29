@@ -12,6 +12,17 @@ service RecipesService {
     rpc GetRecipes(Empty) returns (RecipeListResponse);
 }
 
+service JobService {
+    rpc PostJob(PostJobRequest) returns(JobUUID);
+    rpc GetBrewStatus(JobUUID) returns(JobStatusResponse);
+    rpc ChangeStatus(ChangeJobStatus) returns(Empty);
+    rpc StartBrewing(JobUUID) returns(JobTime);
+}
+
+service BrewService {
+    rpc Brew(JobUUID) returns(Empty);
+}
+
 message Empty{}
 
 message CreateIngredientRequest {
@@ -60,4 +71,26 @@ message RecipeResponse {
 
 message RecipeListResponse {
     repeated RecipeResponse recipes = 1;
+}
+
+message PostJobRequest {
+    int32 recipeId = 1;
+    string details = 2;
+}
+
+message JobUUID {
+    string jobUUID = 1;
+}
+
+message JobStatusResponse {
+    string status = 1;
+}
+
+message ChangeJobStatus {
+    string uuid   = 1;
+    string status = 2;
+}
+
+message JobTime {
+    int32 brewingTime = 1;
 }

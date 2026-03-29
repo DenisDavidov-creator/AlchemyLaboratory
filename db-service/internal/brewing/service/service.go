@@ -13,7 +13,7 @@ import (
 
 type BrewingServiceInterface interface {
 	CreateJob(ctx context.Context, m dto.JobDTO) (*dto.JobUUIDDTO, error)
-	GetJobByUUID(ctx context.Context, uuid dto.JobUUIDDTO) (*dto.JobTimeDTO, error)
+	StartBrewing(ctx context.Context, uuid dto.JobUUIDDTO) (*dto.JobTimeDTO, error)
 	GetBrewStatus(ctx context.Context, uuid dto.JobUUIDDTO) (*dto.JobStatusresponseDTO, error)
 	SetStatus(ctx context.Context, req dto.JobStatusDTO) error
 }
@@ -52,22 +52,22 @@ func (s *BrewingService) CreateJob(ctx context.Context, m dto.JobDTO) (*dto.JobU
 	return &UUID, nil
 }
 
-func (s *BrewingService) GetJobByUUID(ctx context.Context, uuid dto.JobUUIDDTO) (*dto.JobTimeDTO, error) {
+func (s *BrewingService) StartBrewing(ctx context.Context, uuid dto.JobUUIDDTO) (*dto.JobTimeDTO, error) {
 
 	var brewingTime int
 	recipeId, err := s.AlchemyRepo.GetRecipeID(ctx, uuid.JobUUID)
 	if err != nil {
-		return nil, fmt.Errorf("GetJobByUUID: %w", err)
+		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
 	ingredients, err := s.AlchemyRepo.GetIngredientsByRecipe(ctx, recipeId)
 	if err != nil {
-		return nil, fmt.Errorf("GetJobByUUID: %w", err)
+		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
 	brewingTime, err = s.AlchemyRepo.GetBrewingTime(ctx, recipeId)
 	if err != nil {
-		return nil, fmt.Errorf("GetJobByUUID: %w", err)
+		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
 	err = s.Trans.WithinTransaction(ctx, func(ctx context.Context) error {
@@ -83,7 +83,7 @@ func (s *BrewingService) GetJobByUUID(ctx context.Context, uuid dto.JobUUIDDTO) 
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("GetJobByUUID: %w", err)
+		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
 	return &dto.JobTimeDTO{BrweingTime: brewingTime}, nil

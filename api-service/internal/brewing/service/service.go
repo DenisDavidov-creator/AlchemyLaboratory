@@ -33,7 +33,7 @@ func (s *BrewingService) PostJob(ctx context.Context, jobDTO dto.JobDTO) (*dto.J
 	go func() {
 		err := s.Boiled(context.Background(), uuid)
 		if err != nil {
-			log.Printf("Boiled error: %v", err)
+			log.Printf("PostJob: %v", err)
 		}
 	}()
 

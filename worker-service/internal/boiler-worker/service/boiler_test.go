@@ -62,13 +62,13 @@ func TestBoiled(t *testing.T) {
 
 		switch tt.name {
 		case "Success":
-			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
+			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
 			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
 		case "Error - get time":
-			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
+			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
 			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: "failed"}).Return(tt.setStatusErr)
 		case "Error - set status":
-			mockRepo.On("GetJobByUUID", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
+			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
 			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
 		}
 

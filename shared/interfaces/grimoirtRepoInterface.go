@@ -7,7 +7,7 @@ package interfaces
 // 	PostRecipe(ctx context.Context, m models.Recipe) (*models.Recipe, error)
 // 	GetRecipes(ctx context.Context) ([]models.Recipe, error)
 // 	PostJob(ctx context.Context, m models.BrewingJobs) (*models.BrewingJobs, error)
-// 	GetJobByUUID(ctx context.Context, uuid string) (int, error)
+// 	StartBrewing(ctx context.Context, uuid string) (int, error)
 // 	GetBrewStatus(ctx context.Context, uuid string) (string, error)
 // 	SetStatus(ctx context.Context, uuid, status string) error
 // }

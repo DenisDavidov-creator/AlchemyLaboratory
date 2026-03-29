@@ -35,7 +35,9 @@ func main() {
 
 	BrewingHandler := brewingHandler.NewBrewingHandler(BrewingService)
 	AlchemyHandler := alchemyHandler.NewAlchemyHandler(AlchemyService)
+
 	grpcAlchemyHandler := alchemyHandler.NeWGrpcAlchemicalHandler(AlchemyService)
+	grpcJobHandler := brewingHandler.NeWGrpcBrewingHandler(BrewingService)
 
 	//TODO add .env
 	lis, err := net.Listen("tcp", ":50051")
@@ -46,6 +48,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterIngredientServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterRecipesServiceServer(grpcServer, grpcAlchemyHandler)
+	pb.RegisterJobServiceServer(grpcServer, grpcJobHandler)
 
 	go func() {
 		log.Println("start gRPC")

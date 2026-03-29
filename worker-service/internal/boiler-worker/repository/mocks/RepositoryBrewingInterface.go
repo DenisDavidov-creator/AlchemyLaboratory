@@ -14,12 +14,12 @@ type RepositoryBrewingInterface struct {
 	mock.Mock
 }
 
-// GetJobByUUID provides a mock function with given fields: _a0, _a1
-func (_m *RepositoryBrewingInterface) GetJobByUUID(_a0 context.Context, _a1 dto.JobUUIDDTO) (*dto.JobTimeDTO, error) {
+// StartBrewing provides a mock function with given fields: _a0, _a1
+func (_m *RepositoryBrewingInterface) StartBrewing(_a0 context.Context, _a1 dto.JobUUIDDTO) (*dto.JobTimeDTO, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetJobByUUID")
+		panic("no return value specified for StartBrewing")
 	}
 
 	var r0 *dto.JobTimeDTO

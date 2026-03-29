@@ -19,7 +19,7 @@ import (
 
 var ERROR_DB error = errors.New("ERROR_DB")
 
-func TestGetJobByUUID(t *testing.T) {
+func TestStartBrewing(t *testing.T) {
 	tests := []struct {
 		Name          string
 		expectedError error
@@ -131,7 +131,7 @@ func TestGetJobByUUID(t *testing.T) {
 
 			serv := service.NewBrewingService(brewingMockRepo, alchemyMockRepo, mockTrans)
 
-			brewingTime, err := serv.GetJobByUUID(context.Background(), tt.UUID)
+			brewingTime, err := serv.StartBrewing(context.Background(), tt.UUID)
 
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)
