@@ -123,6 +123,7 @@ func (r *BrewingRepo) GetBrewStatus(ctx context.Context, req dto.JobUUIDDTO) (*d
 		if status.Code(err) == codes.NotFound {
 			return nil, errorList.ErrJobNotFound
 		}
+		return nil, fmt.Errorf("GetBrewStatus: %w", err)
 	}
 	return &dto.JobStatusresponseDTO{Status: resp.Status}, nil
 
