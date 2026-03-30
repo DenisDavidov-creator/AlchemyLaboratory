@@ -7,7 +7,12 @@ import (
 	dto "alla/shared/DTO"
 	errorList "alla/shared/errorList"
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 //go:generate mockery --name=AlchemyServiceInterface
@@ -20,14 +25,16 @@ type AlchemyServiceInterface interface {
 }
 
 type AclhemyService struct {
-	aRepo repository.AlchemyRepoInterface
-	trans transactor.TransactorInterface
+	aRepo        repository.AlchemyRepoInterface
+	trans        transactor.TransactorInterface
+	redeisClient *redis.Client
 }
 
-func NewAlchemyService(aRepo repository.AlchemyRepoInterface, trans transactor.TransactorInterface) *AclhemyService {
+func NewAlchemyService(aRepo repository.AlchemyRepoInterface, trans transactor.TransactorInterface, redeisClient *redis.Client) *AclhemyService {
 	return &AclhemyService{
-		aRepo: aRepo,
-		trans: trans,
+		aRepo:        aRepo,
+		trans:        trans,
+		redeisClient: redeisClient,
 	}
 }
 
@@ -130,9 +137,12 @@ func (s *AclhemyService) PostRecipe(ctx context.Context, recipeDTO dto.RecipeDTO
 		}
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
+	}
+
+	if err = s.redeisClient.Del(ctx, "labaratory:recipes").Err(); err != nil {
+		log.Printf("PostRecipes: failed to invaliadte recipes cache, %v", err)
 	}
 
 	returnRecipe := dto.RecipeResponseDTO{
@@ -147,12 +157,22 @@ func (s *AclhemyService) PostRecipe(ctx context.Context, recipeDTO dto.RecipeDTO
 
 func (s *AclhemyService) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDTO, error) {
 
+	var recipesResponse []dto.RecipeResponseDTO
+
+	val, err := s.redeisClient.Get(ctx, "labaratory:recipes").Bytes()
+	if err == nil {
+		err = json.Unmarshal(val, &recipesResponse)
+		if err == nil {
+			return recipesResponse, nil
+		}
+
+		log.Println("Get Redis: Error unmarshalling")
+	}
+
 	recipes, err := s.aRepo.GetRecipes(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("GetRecipes: %w", err)
 	}
-
-	var recipesResponse []dto.RecipeResponseDTO
 
 	for _, value := range recipes {
 
@@ -176,6 +196,13 @@ func (s *AclhemyService) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDT
 		recipesResponse = append(recipesResponse, recRes)
 	}
 
+	data, err := json.Marshal(recipesResponse)
+	if err == nil {
+		err = s.redeisClient.Set(ctx, "labaratory:recipes", data, 60*time.Second).Err()
+		if err != nil {
+			log.Println("Set Redis: failed to chache recipes")
+		}
+	}
 	return recipesResponse, nil
 
 }

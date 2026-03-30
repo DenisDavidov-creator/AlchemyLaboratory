@@ -47,7 +47,9 @@ services:
       db: 
         condition: service_healthy
       migrate: 
-        condition: service_completed_successfully 
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
 
   worker-service:
     build:
@@ -67,5 +69,16 @@ services:
       - SWAGGER_JSON=/swagger/swagger.json
     volumes:
       - ./api-service/docs:/swagger
+
+  redis:
+    image: redis:8.6.2-alpine
+    # ports:
+    #   - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      
+
 volumes:
   postgres_data:

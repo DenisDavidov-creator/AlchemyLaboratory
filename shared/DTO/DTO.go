@@ -35,11 +35,11 @@ type RecipeIDResponseDTO struct {
 }
 
 type RecipeResponseDTO struct {
-	ID                 int    `json:"id"`
-	Name               string `json:"name"`
-	Description        string `json:"description"`
-	BrewingTimeSeconds int    `json:"brewing_time_seconds"`
-	Ingredients        []RecipeIngredientsDTO
+	ID                 int                    `json:"id"`
+	Name               string                 `json:"name"`
+	Description        string                 `json:"description"`
+	BrewingTimeSeconds int                    `json:"brewing_time_seconds"`
+	Ingredients        []RecipeIngredientsDTO `json:"ingredients"`
 }
 
 type RecipeDTO struct {

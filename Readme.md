@@ -48,6 +48,6 @@ make test-cover-html     # run with coverage report in html
 - [x] Unit and integration tests
 - [x] Docker containerization + graceful shutdown
 - [x] Swagger documentation
-- [ ] HTTP → gRPC between services (in progress)
-- [ ] Redis caching for recipes
+- [x] HTTP → gRPC between services
+- [x] Redis caching for recipes
 - [ ] Kafka for async worker jobs

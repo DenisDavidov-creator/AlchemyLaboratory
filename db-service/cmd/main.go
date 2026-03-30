@@ -10,6 +10,7 @@ import (
 	"alla/db-service/internal/server"
 	"alla/db-service/internal/transactor"
 	"alla/shared/pb"
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"github.com/subosito/gotenv"
 	"google.golang.org/grpc"
 )
@@ -25,13 +27,20 @@ func main() {
 	db := connectToDB()
 	defer db.Close()
 
+	redeisClient := redis.NewClient(&redis.Options{
+		Addr: os.Getenv("REDIS_ADDR"),
+	})
+	err := redeisClient.Ping(context.Background()).Err()
+	if err != nil {
+		log.Fatalf("Error Start redis, %v", err)
+	}
 	tm := transactor.NewPtransactor(db)
 
 	AlchemyRepository := alchemyRepository.NewAlchemyRepository(db)
 	BrewingRepository := brewingRepository.NewBrewingRepository(db)
 
 	BrewingService := brewingService.NewBrewingService(BrewingRepository, AlchemyRepository, tm)
-	AlchemyService := alchemyService.NewAlchemyService(AlchemyRepository, tm)
+	AlchemyService := alchemyService.NewAlchemyService(AlchemyRepository, tm, redeisClient)
 
 	BrewingHandler := brewingHandler.NewBrewingHandler(BrewingService)
 	AlchemyHandler := alchemyHandler.NewAlchemyHandler(AlchemyService)

@@ -7,11 +7,14 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.11.2
+	github.com/redis/go-redis/v9 v9.18.0
 	github.com/subosito/gotenv v1.6.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
 )
 
 require (
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260209200024-4cfbd4190f57 // indirect
 )

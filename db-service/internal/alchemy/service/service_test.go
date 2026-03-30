@@ -71,7 +71,7 @@ func TestPostIngredients(t *testing.T) {
 
 			}
 
-			serv := service.NewAlchemyService(mockRepo, nil)
+			serv := service.NewAlchemyService(mockRepo, nil, nil)
 			_, err := serv.PostIngredients(context.Background(), tt.IngDTO)
 
 			if tt.ExpectedErr != nil {
@@ -214,7 +214,7 @@ func TestPostRecipe(t *testing.T) {
 				mockRepo.On("CreateRecipeIngredients", context.Background(), tt.ValueString, tt.ValueArgs).Return(tt.CreateRecipeIngredientsErr)
 			}
 
-			serv := service.NewAlchemyService(mockRepo, mockTrans)
+			serv := service.NewAlchemyService(mockRepo, mockTrans, nil)
 			res, err := serv.PostRecipe(context.Background(), tt.RecipeDTO)
 
 			if tt.ExpectedErr != nil {
