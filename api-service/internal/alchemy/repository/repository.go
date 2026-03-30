@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,16 +21,12 @@ type RepositoryInterface interface {
 }
 
 type RepositoryAPI struct {
-	baseURL          string
-	httpClient       *http.Client
 	ingredientClient pb.IngredientServiceClient
 	recipeClient     pb.RecipesServiceClient
 }
 
-func NewRepository(URL string, ingredientClient pb.IngredientServiceClient, recipeClient pb.RecipesServiceClient) *RepositoryAPI {
+func NewRepository(ingredientClient pb.IngredientServiceClient, recipeClient pb.RecipesServiceClient) *RepositoryAPI {
 	return &RepositoryAPI{
-		baseURL:          URL,
-		httpClient:       &http.Client{},
 		ingredientClient: ingredientClient,
 		recipeClient:     recipeClient,
 	}
@@ -55,41 +50,12 @@ func (r *RepositoryAPI) PostIngredients(ctx context.Context, req dto.IngredientD
 		Description: resp.Description,
 		Quantity:    int(resp.Quantity),
 	}, nil
-
-	// body, err := json.Marshal(req)
-	// if err != nil {
-	// 	return nil, errorList.ErrWrongJsonFormat
-	// }
-
-	// url := fmt.Sprintf("%s/internal/ingredients", r.baseURL)
-	// httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
-
-	// httpReq.Header.Set("Content-type", "application/json")
-
-	// resp, err := r.httpClient.Do(httpReq)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer resp.Body.Close()
-
-	// switch resp.StatusCode {
-	// case http.StatusConflict:
-	// 	return nil, errorList.ErrIngredientAlreadyExist
-	// case http.StatusCreated:
-	// 	var result dto.IngredientResponseDTO
-	// 	err = json.NewDecoder(resp.Body).Decode(&result)
-	// 	if err != nil {
-	// 		return nil, errorList.ErrWrongJsonFormat
-	// 	}
-	// 	return &result, nil
-	// default:
-	// 	return nil, fmt.Errorf("PostIngredients: unexpected StatusCode: %d", resp.StatusCode)
-	// }
 }
 func (r *RepositoryAPI) GetIngredients(ctx context.Context) ([]dto.IngredientResponseDTO, error) {
 
 	resp, err := r.ingredientClient.GetIngredients(ctx, &pb.Empty{})
 	if err != nil {
+		log.Println(err)
 		return nil, fmt.Errorf("GetIngredients: unexpected statusCode %d", status.Code(err))
 	}
 	var ings = []dto.IngredientResponseDTO{}
@@ -104,28 +70,6 @@ func (r *RepositoryAPI) GetIngredients(ctx context.Context) ([]dto.IngredientRes
 		ings = append(ings, ing)
 	}
 	return ings, nil
-	// url := fmt.Sprintf("%s/internal/ingredients", r.baseURL)
-	// httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-
-	// httpReq.Header.Set("Content-type", "application/json")
-
-	// resp, err := r.httpClient.Do(httpReq)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer resp.Body.Close()
-
-	// switch resp.StatusCode {
-	// case http.StatusOK:
-	// 	var result []dto.IngredientResponseDTO
-	// 	err = json.NewDecoder(resp.Body).Decode(&result)
-	// 	if err != nil {
-	// 		return nil, errorList.ErrWrongJsonFormat
-	// 	}
-	// 	return result, nil
-	// default:
-	// 	return nil, fmt.Errorf("GetIngredients: unexpected StatusCode: %d", resp.StatusCode)
-	// }
 
 }
 func (r *RepositoryAPI) PostRecipe(ctx context.Context, req dto.RecipeDTO) (*dto.RecipeResponseDTO, error) {
@@ -199,19 +143,6 @@ func (r *RepositoryAPI) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDTO
 		results = append(results, recipe)
 	}
 	return results, nil
-	// switch resp.StatusCode {
-	// case http.StatusOK:
-	// 	var result []dto.RecipeResponseDTO
-	// 	err = json.NewDecoder(resp.Body).Decode(&result)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return result, nil
-	// case http.StatusBadRequest:
-	// 	return nil, errorList.ErrInconsistentData
-	// default:
-	// 	return nil, fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
-	// }
 
 }
 
@@ -232,25 +163,4 @@ func (r *RepositoryAPI) AddIngredients(ctx context.Context, req dto.UpdateIngred
 	}
 
 	return nil
-	// body, err := json.Marshal(req)
-	// if err != nil {
-	// 	return fmt.Errorf("Repository: %w", err)
-	// }
-
-	// url := fmt.Sprintf("%s/internal/ingredients/%d", r.baseURL, req.ID)
-	// httpReq, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(body))
-
-	// httpReq.Header.Set("Content-type", "application/json")
-
-	// resp, err := r.httpClient.Do(httpReq)
-
-	// switch resp.StatusCode {
-	// case http.StatusOK:
-	// 	return nil
-	// case http.StatusNotFound:
-	// 	return errorList.ErrIngredientNotFound
-	// default:
-	// 	return fmt.Errorf("GetRecipes: unexpected StatusCode: %d", resp.StatusCode)
-	// }
-
 }

@@ -31,9 +31,7 @@ func main() {
 		log.Fatal("We can't get .env parameterth", err)
 	}
 
-	DB_SERVICE_URL := os.Getenv("DB_SERVICE_URL")
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
-	WORKER_SERVICE_URL := os.Getenv("WORKER_SERVICE_URL")
 	WORKER_SERVICE_GRPC := os.Getenv("WORKER_SERVICE_GRPC")
 
 	connDB, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -53,8 +51,8 @@ func main() {
 	jobClient := pb.NewJobServiceClient(connDB)
 	brewingClient := pb.NewBrewServiceClient(connWorker)
 
-	repoA := alchemyRepo.NewRepository(DB_SERVICE_URL, ingredientClient, recipeClient)
-	repoBrewing := brewingRepo.NewBrewingRepo(DB_SERVICE_URL, WORKER_SERVICE_URL, jobClient, brewingClient)
+	repoA := alchemyRepo.NewRepository(ingredientClient, recipeClient)
+	repoBrewing := brewingRepo.NewBrewingRepo(jobClient, brewingClient)
 
 	serviceA := alchemyService.NewServiceAPI(repoA)
 	serviceBrewing := brewingService.NewBrewingService(repoBrewing)

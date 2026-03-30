@@ -7,7 +7,6 @@ import (
 	brewingHandler "alla/db-service/internal/brewing/handler"
 	brewingRepository "alla/db-service/internal/brewing/repository"
 	brewingService "alla/db-service/internal/brewing/service"
-	"alla/db-service/internal/server"
 	"alla/db-service/internal/transactor"
 	"alla/shared/pb"
 	"context"
@@ -15,6 +14,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -42,14 +43,10 @@ func main() {
 	BrewingService := brewingService.NewBrewingService(BrewingRepository, AlchemyRepository, tm)
 	AlchemyService := alchemyService.NewAlchemyService(AlchemyRepository, tm, redeisClient)
 
-	BrewingHandler := brewingHandler.NewBrewingHandler(BrewingService)
-	AlchemyHandler := alchemyHandler.NewAlchemyHandler(AlchemyService)
-
 	grpcAlchemyHandler := alchemyHandler.NeWGrpcAlchemicalHandler(AlchemyService)
 	grpcJobHandler := brewingHandler.NeWGrpcBrewingHandler(BrewingService)
 
-	//TODO add .env
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", os.Getenv("DB_SERVICE_GRPC_PORT"))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -59,18 +56,21 @@ func main() {
 	pb.RegisterRecipesServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterJobServiceServer(grpcServer, grpcJobHandler)
 
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
 	go func() {
-		log.Println("start gRPC")
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("gRPC not running: %v", err)
-		}
+		<-quit
+		log.Println("shutting down...")
+
+		grpcServer.GracefulStop()
+		redeisClient.Close()
+		db.Close()
 	}()
 
-	DBServer := server.NewServer(AlchemyHandler, BrewingHandler)
-
-	err = DBServer.Run()
-	if err != nil {
-		log.Fatal("Error: ", err)
+	log.Println("start gRPC")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("gRPC not running: %v", err)
 	}
 
 }

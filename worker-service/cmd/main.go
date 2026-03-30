@@ -4,10 +4,11 @@ import (
 	"alla/worker-service/internal/boiler-worker/handler"
 	"alla/worker-service/internal/boiler-worker/repository"
 	"alla/worker-service/internal/boiler-worker/service"
-	"alla/worker-service/server"
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	pb "alla/shared/pb"
 
@@ -38,29 +39,27 @@ func main() {
 
 	serviceBrewing := service.NewBoilerWorker(repoBrewing)
 
-	handlerBrewing := handler.NewHandlerBrewing(serviceBrewing)
-
 	grpcBrewingHandler := handler.NewGrpcBrewingHandler(serviceBrewing)
 
-	lis, err := net.Listen("tcp", ":50052")
+	lis, err := net.Listen("tcp", os.Getenv("WORKER_SERVICE_GRPC_PORT"))
 	if err != nil {
 		log.Fatalf("failed to listen gRPC: %w", err)
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterBrewServiceServer(grpcServer, grpcBrewingHandler)
 
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
 	go func() {
-		log.Println("Start gRPC")
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("gRPC not running: %v", err)
-		}
+		<-quit
+		log.Println("Shouting down...")
+		grpcServer.GracefulStop()
 	}()
 
-	serverAPI := server.NewServer(*handlerBrewing)
-
-	err = serverAPI.Run()
-	if err != nil {
-		log.Fatalf("Server error")
+	log.Println("Start gRPC")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("gRPC not running: %v", err)
 	}
 
 }

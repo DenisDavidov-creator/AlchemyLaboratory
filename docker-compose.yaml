@@ -34,15 +34,18 @@ services:
     #   - DB_SERVICE_URL=${DB_SERVICE_URL}
     ports:
       - "8080:8080"
+    restart: on-failure
     depends_on:
       - db-service
   db-service:
     build:
       context: .              
       dockerfile: db-service/Dockerfile
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
+      interval: 5s
+      retries: 5
     env_file: ./db-service/.env
-    # ports:
-    #   - "8081:8081"
     depends_on:
       db: 
         condition: service_healthy
@@ -55,9 +58,11 @@ services:
     build:
       context: .              
       dockerfile: worker-service/Dockerfile
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50052"]
+      interval: 5s
+      retries: 5
     env_file: ./worker-service/.env
-    # ports:
-    #   - "8082:8082"
     depends_on:
       - db-service
 
