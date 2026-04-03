@@ -5,12 +5,15 @@ import (
 	"alla/worker-service/internal/boiler-worker/service"
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	dto "alla/shared/DTO"
+	"alla/shared/errorList"
 	pb "alla/shared/pb"
 
 	"github.com/subosito/gotenv"
@@ -29,7 +32,8 @@ func main() {
 	kafkaClient, err := kgo.NewClient(
 		kgo.SeedBrokers(os.Getenv("KAFKA_ADDR")),
 		kgo.ConsumerGroup("worker-group"),
-		kgo.ConsumeTopics("brew-jobs"),
+		kgo.ConsumeTopics("brew-jobs", "brew-jobs.retry"),
+		kgo.DisableAutoCommit(),
 	)
 	if err != nil {
 		log.Fatalf("failed to connect to Kafka: %v", err)
@@ -77,7 +81,43 @@ func main() {
 				return
 			}
 			if err := serviceBrewing.Boiled(context.Background(), dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
+				if errors.Is(err, errorList.ErrIngredientNotEnough) {
+					log.Printf("Job error: %v", err)
+					if err := kafkaClient.CommitRecords(ctx, r); err != nil {
+						log.Printf("consumer: commit error: %v", err)
+					}
+					return
+				}
+
 				log.Printf("consumer: Boiled error: %v", err)
+
+				var retryCount int
+				for _, h := range r.Headers {
+					if h.Key == "retry-count" {
+						retryCount, err = strconv.Atoi(string(h.Value))
+						if err != nil {
+							log.Println("consumer: error checking retryCount")
+						}
+					}
+				}
+				if retryCount >= 3 {
+					kafkaClient.ProduceSync(ctx, &kgo.Record{
+						Topic: "brew-jobs.dlq",
+						Value: r.Value,
+					})
+					return
+				}
+				kafkaClient.ProduceSync(ctx, &kgo.Record{
+					Topic: "brew-jobs.retry",
+					Value: r.Value,
+					Headers: []kgo.RecordHeader{
+						{Key: "retry-count", Value: []byte(strconv.Itoa(retryCount + 1))},
+					},
+				})
+				return
+			}
+			if err := kafkaClient.CommitRecords(ctx, r); err != nil {
+				log.Printf("consumer: commit error: %v", err)
 			}
 		})
 	}

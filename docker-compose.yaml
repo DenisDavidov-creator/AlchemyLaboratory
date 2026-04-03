@@ -118,6 +118,8 @@ services:
     entrypoint: ["/bin/bash", "-c"]
     command: |
       "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic brew-jobs --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic brew-jobs.retry --partitions 3 --replication-factor 1 &&
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic brew-jobs.dlq --partitions 3 --replication-factor 1 &&
       echo 'Topics created successfully'"
 volumes:
   postgres_data:
