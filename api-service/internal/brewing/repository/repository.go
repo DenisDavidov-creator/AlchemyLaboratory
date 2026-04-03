@@ -6,8 +6,8 @@ import (
 	"alla/shared/pb"
 	"context"
 	"fmt"
-	"net/http"
 
+	"github.com/twmb/franz-go/pkg/kgo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -19,17 +19,14 @@ type BrewingRepositoryInterface interface {
 }
 
 type BrewingRepo struct {
-	httpClient *http.Client
-	jobClient  pb.JobServiceClient
-	brewClient pb.BrewServiceClient
+	jobClient   pb.JobServiceClient
+	kafkaClient *kgo.Client
 }
 
-func NewBrewingRepo(jobClient pb.JobServiceClient, brewClient pb.BrewServiceClient) *BrewingRepo {
+func NewBrewingRepo(jobClient pb.JobServiceClient, kafkaClient *kgo.Client) *BrewingRepo {
 	return &BrewingRepo{
-		jobClient:  jobClient,
-		brewClient: brewClient,
-
-		httpClient: &http.Client{},
+		jobClient:   jobClient,
+		kafkaClient: kafkaClient,
 	}
 }
 
@@ -49,16 +46,6 @@ func (r *BrewingRepo) PostJob(ctx context.Context, req dto.JobDTO) (*dto.JobUUID
 	return &dto.JobUUIDDTO{
 		JobUUID: resp.JobUUID,
 	}, nil
-
-}
-
-func (r *BrewingRepo) Boiled(ctx context.Context, req dto.JobUUIDDTO) error {
-
-	_, err := r.brewClient.Brew(ctx, &pb.JobUUID{JobUUID: req.JobUUID})
-	if err != nil {
-		return fmt.Errorf("Boild: %w", err)
-	}
-	return nil
 
 }
 

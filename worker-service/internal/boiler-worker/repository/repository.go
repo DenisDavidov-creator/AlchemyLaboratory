@@ -15,14 +15,12 @@ type RepositoryBrewingInterface interface {
 }
 
 type repoBrewing struct {
-	DBURL         string
 	httpClient    *http.Client
 	brewingClient pb.JobServiceClient
 }
 
-func NewRepoBrewing(DBURL string, brewingClient pb.JobServiceClient) *repoBrewing {
+func NewRepoBrewing(brewingClient pb.JobServiceClient) *repoBrewing {
 	return &repoBrewing{
-		DBURL:         DBURL,
 		httpClient:    &http.Client{},
 		brewingClient: brewingClient,
 	}

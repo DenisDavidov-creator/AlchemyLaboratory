@@ -36,7 +36,11 @@ services:
       - "8080:8080"
     restart: on-failure
     depends_on:
-      - db-service
+      db-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+
   db-service:
     build:
       context: .              
@@ -59,12 +63,15 @@ services:
       context: .              
       dockerfile: worker-service/Dockerfile
     healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50052"]
+      test: ["CMD-SHELL", "kill -0 1"]
       interval: 5s
       retries: 5
     env_file: ./worker-service/.env
     depends_on:
-      - db-service
+      db-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
 
   swagger-ui:
     image: swaggerapi/swagger-ui
@@ -83,7 +90,35 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       retries: 5
-      
-
+  kafka:
+    image: apache/kafka:latest
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:29092"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+  kafka-init:
+    image: apache/kafka:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+    entrypoint: ["/bin/bash", "-c"]
+    command: |
+      "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic brew-jobs --partitions 3 --replication-factor 1 &&
+      echo 'Topics created successfully'"
 volumes:
   postgres_data:
+  kafka_data:

@@ -22,6 +22,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/subosito/gotenv"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
@@ -52,6 +54,9 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+	healthServer := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
+
 	pb.RegisterIngredientServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterRecipesServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterJobServiceServer(grpcServer, grpcJobHandler)

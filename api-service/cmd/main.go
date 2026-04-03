@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"github.com/subosito/gotenv"
+	"github.com/twmb/franz-go/pkg/kgo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -46,13 +47,20 @@ func main() {
 	}
 	defer connWorker.Close()
 
+	kafkaClient, err := kgo.NewClient(
+		kgo.SeedBrokers(os.Getenv("KAFKA_ADDR")),
+	)
+	if err != nil {
+		log.Fatalf("failed to connect to Kafka %v", err)
+	}
+	defer kafkaClient.Close()
+
 	ingredientClient := pb.NewIngredientServiceClient(connDB)
 	recipeClient := pb.NewRecipesServiceClient(connDB)
 	jobClient := pb.NewJobServiceClient(connDB)
-	brewingClient := pb.NewBrewServiceClient(connWorker)
 
 	repoA := alchemyRepo.NewRepository(ingredientClient, recipeClient)
-	repoBrewing := brewingRepo.NewBrewingRepo(jobClient, brewingClient)
+	repoBrewing := brewingRepo.NewBrewingRepo(jobClient, kafkaClient)
 
 	serviceA := alchemyService.NewServiceAPI(repoA)
 	serviceBrewing := brewingService.NewBrewingService(repoBrewing)
