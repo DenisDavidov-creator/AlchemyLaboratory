@@ -290,7 +290,7 @@ func (r *AlchemyRepository) CheckingIngridients(ctx context.Context, ings []mode
 		query := `
 			UPDATE ingredients 
 			SET quantity = quantity - $1
-			WHERE id = $2 and quantity >= 0
+			WHERE id = $2 and quantity >= $1
 			RETURNING quantity
 		`
 		var newQuantity int
@@ -302,13 +302,11 @@ func (r *AlchemyRepository) CheckingIngridients(ctx context.Context, ings []mode
 		}
 
 		if err != nil {
-			var pqErr *pq.Error
-			if errors.As(err, &pqErr) && pqErr.Code == errorList.PgCheckViolation {
+			if err == sql.ErrNoRows {
 				return errorList.ErrIngredientNotEnough
 			}
 			return fmt.Errorf("CheckingIngridients: %w", err)
 		}
-
 	}
 
 	return nil

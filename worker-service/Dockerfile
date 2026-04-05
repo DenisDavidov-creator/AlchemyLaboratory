@@ -8,7 +8,7 @@ COPY worker-service/ ./worker-service/
 WORKDIR /app/worker-service
 
 RUN go mod download
-RUN go build -o main ./cmd/main.go
+RUN go build -o main ./cmd/
 
 FROM alpine:latest
 WORKDIR /root/
