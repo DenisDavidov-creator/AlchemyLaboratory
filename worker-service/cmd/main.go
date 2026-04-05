@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -23,10 +23,14 @@ import (
 )
 
 func main() {
+	logger := newLogger()
 
 	err := gotenv.Load()
 	if err != nil {
-		log.Fatal("We can't get .env parameterth", err)
+		logger.Error("Failed get ENV",
+			slog.String("err", err.Error()),
+		)
+		os.Exit(1)
 	}
 
 	kafkaClient, err := kgo.NewClient(
@@ -36,15 +40,21 @@ func main() {
 		kgo.DisableAutoCommit(),
 	)
 	if err != nil {
-		log.Fatalf("failed to connect to Kafka: %v", err)
+		logger.Error("Failed connect to Kafka",
+			slog.String("err", err.Error()),
+			slog.String("addr", os.Getenv("KAFKA_ADDR")),
+		)
+		os.Exit(1)
 	}
 	defer kafkaClient.Close()
 
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
-
 	conn, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("failed to connect to service by gRPC %v", err)
+		logger.Error("failed to connect to service by gRPC",
+			slog.String("err", err.Error()),
+		)
+		os.Exit(1)
 	}
 	defer conn.Close()
 
@@ -60,13 +70,13 @@ func main() {
 
 	go func() {
 		<-quit
-		log.Println("Shouting down...")
+		logger.Info("Shouting down")
 		cancel()
 		kafkaClient.Close()
 		conn.Close()
 	}()
 
-	log.Println("Starting Kafka consumer...")
+	logger.Info("Starting Kafka consumer")
 	for {
 		fetches := kafkaClient.PollFetches(ctx)
 		if fetches.IsClientClosed() {
@@ -77,36 +87,52 @@ func main() {
 				JobUUID string `json:"job_uuid"`
 			}
 			if err := json.Unmarshal(r.Value, &msg); err != nil {
-				log.Printf("consumer: unmarshal error: %v", err)
+				logger.Error("Unmarshal error",
+					slog.String("err", err.Error()),
+				)
 				return
 			}
+			jobLogger := logger.With(
+				slog.String("job_uuid", msg.JobUUID),
+			)
 			if err := serviceBrewing.Boiled(context.Background(), dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
 				if errors.Is(err, errorList.ErrIngredientNotEnough) {
-					log.Printf("Job error: %v", err)
+					jobLogger.Warn("Not enough ingredients:",
+						slog.String("err", err.Error()),
+					)
 					if err := kafkaClient.CommitRecords(ctx, r); err != nil {
-						log.Printf("consumer: commit error: %v", err)
+						logger.Warn("Kafka commit",
+							"err", err.Error(),
+						)
 					}
 					return
 				}
-
-				log.Printf("consumer: Boiled error: %v", err)
+				jobLogger.Warn("Boiled, unexpected error", slog.String("err", err.Error()))
 
 				var retryCount int
 				for _, h := range r.Headers {
 					if h.Key == "retry-count" {
 						retryCount, err = strconv.Atoi(string(h.Value))
 						if err != nil {
-							log.Println("consumer: error checking retryCount")
+							jobLogger.Error("invalid retry-count header",
+								slog.String("err", err.Error()),
+							)
 						}
 					}
 				}
 				if retryCount >= 3 {
+					jobLogger.Error("max retries reached",
+						slog.Int("retry_count", retryCount),
+					)
 					kafkaClient.ProduceSync(ctx, &kgo.Record{
 						Topic: "brew-jobs.dlq",
 						Value: r.Value,
 					})
 					return
 				}
+				jobLogger.Warn("Technical error, sending to retry",
+					slog.Int("count-retry", retryCount+1),
+				)
 				kafkaClient.ProduceSync(ctx, &kgo.Record{
 					Topic: "brew-jobs.retry",
 					Value: r.Value,
@@ -117,9 +143,28 @@ func main() {
 				return
 			}
 			if err := kafkaClient.CommitRecords(ctx, r); err != nil {
-				log.Printf("consumer: commit error: %v", err)
+				jobLogger.Warn("Kafka commit",
+					slog.String("err", err.Error()),
+				)
+
 			}
 		})
 	}
 
+}
+
+func newLogger() *slog.Logger {
+	var handler slog.Handler
+	if os.Getenv("ENV") == "production" {
+		opts := &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		}
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	} else {
+		opts := &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+	return slog.New(handler)
 }

@@ -50,4 +50,4 @@ make test-cover-html     # run with coverage report in html
 - [x] Swagger documentation
 - [x] HTTP → gRPC between services
 - [x] Redis caching for recipes
-- [ ] Kafka for async worker jobs
+- [x] Kafka for async worker jobs
