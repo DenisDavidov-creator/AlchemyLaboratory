@@ -10,6 +10,9 @@
 - PostgreSQL 17
 - Docker / docker-compose
 - sqlx, testcontainers-go, testify, mockery
+- gRPC
+- Redis
+- Kafka (franz-go)
 
 ## How to run
 ```
@@ -51,3 +54,14 @@ make test-cover-html     # run with coverage report in html
 - [x] HTTP → gRPC between services
 - [x] Redis caching for recipes
 - [x] Kafka for async worker jobs
+- [x] Kafka retry + DLQ
+- [x] gRPC health checks
+
+## Extra tasks
+- [ ] Structured logging (slog) - worker-service done, api-service and db-service pending
+- [ ] Prometheus + Grafana metrics
+- [ ] Test coverage ≥ 60%
+- [ ] Stress tests (k6)
+- [ ] Distributed tracing (OpenTelemetry)
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Rate limiting in api-service
