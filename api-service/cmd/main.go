@@ -8,10 +8,10 @@ import (
 	brewingRepo "alla/api-service/internal/brewing/repository"
 	brewingService "alla/api-service/internal/brewing/service"
 	"alla/api-service/internal/server"
+	"log/slog"
 
 	pb "alla/shared/pb"
 
-	"log"
 	"os"
 
 	"github.com/subosito/gotenv"
@@ -27,9 +27,12 @@ import (
 // @BasePath        /
 func main() {
 
+	logger := NewLogger()
+
 	err := gotenv.Load()
 	if err != nil {
-		log.Fatal("We can't get .env parameterth", err)
+		logger.Error("get .env", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
@@ -37,13 +40,15 @@ func main() {
 
 	connDB, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("failed to connect to service by gRPC %v", err)
+		logger.Error("Connect to DB-service by gRPC", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer connDB.Close()
 
 	connWorker, err := grpc.NewClient(WORKER_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("failed to connect to service by gRPC %v", err)
+		logger.Error("Connect to worker-service by gRPC", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer connWorker.Close()
 
@@ -51,7 +56,8 @@ func main() {
 		kgo.SeedBrokers(os.Getenv("KAFKA_ADDR")),
 	)
 	if err != nil {
-		log.Fatalf("failed to connect to Kafka %v", err)
+		logger.Error("Connect to Kafka", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	defer kafkaClient.Close()
 
@@ -68,11 +74,12 @@ func main() {
 	handlerA := alchemyHandler.NewGuildHandler(serviceA)
 	handlerBrewing := brewingHandler.NewBrewingHandler(serviceBrewing)
 
-	serverAPI := server.NewServer(handlerA, handlerBrewing)
+	serverAPI := server.NewServer(handlerA, handlerBrewing, logger)
 
 	err = serverAPI.Run()
 	if err != nil {
-		log.Fatalf("Server error")
+		logger.Error("Start server", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
 }
