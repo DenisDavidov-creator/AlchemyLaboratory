@@ -10,11 +10,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
@@ -51,6 +53,7 @@ func (s *Server) Run() error {
 	r.HandleFunc("/recipes", s.alchemyHandler.ShowRecipes).Methods(http.MethodGet)
 	r.HandleFunc("/brew", s.brewingHandler.Brew).Methods(http.MethodPost)
 	r.HandleFunc("/brew/status", s.brewingHandler.StatusBrew).Methods(http.MethodGet)
+	r.Handle("/metrics", promhttp.Handler())
 	corsMiddleware := handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"}),
@@ -101,5 +104,9 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 			slog.Int("status", rw.status),
 			slog.Duration("duration", time.Since(start)),
 		)
+
+		httpRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(rw.status)).Inc()
+		httpRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(time.Since(start).Seconds())
+
 	})
 }

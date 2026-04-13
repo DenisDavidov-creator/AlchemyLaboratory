@@ -58,8 +58,8 @@ make test-cover-html     # run with coverage report in html
 - [x] gRPC health checks
 
 ## Extra tasks
-- [x] Structured logging (slog) - worker-service done, api-service and db-service pending
-- [ ] Prometheus + Grafana metrics
+- [x] Structured logging (slog)
+- [ ] Prometheus + Grafana metrics api-service is done, db-service, worker-service - in progress
 - [ ] Test coverage ≥ 60%
 - [ ] Stress tests (k6)
 - [ ] Distributed tracing (OpenTelemetry)
