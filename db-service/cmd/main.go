@@ -10,24 +10,22 @@ import (
 	"alla/db-service/internal/transactor"
 	"alla/shared/pb"
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
-	"github.com/subosito/gotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func main() {
-	db := connectToDB()
+	logger := NewLogger()
+	db := connectToDB(logger)
 	defer db.Close()
 
 	redeisClient := redis.NewClient(&redis.Options{
@@ -35,7 +33,8 @@ func main() {
 	})
 	err := redeisClient.Ping(context.Background()).Err()
 	if err != nil {
-		log.Fatalf("Error Start redis, %v", err)
+		logger.Error("Failed start redis", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	tm := transactor.NewPtransactor(db)
 
@@ -50,10 +49,13 @@ func main() {
 
 	lis, err := net.Listen("tcp", os.Getenv("DB_SERVICE_GRPC_PORT"))
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		logger.Error("Failed listen gRPC", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(loggingUnaryInterceptors(logger)),
+	)
 	healthServer := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
 
@@ -66,43 +68,17 @@ func main() {
 
 	go func() {
 		<-quit
-		log.Println("shutting down...")
-
+		logger.Info("shouting down")
 		grpcServer.GracefulStop()
 		redeisClient.Close()
 		db.Close()
 	}()
 
-	log.Println("start gRPC")
+	logger.Info("Start gRPC")
+
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("gRPC not running: %v", err)
+		logger.Error("gRPC not Running", slog.String("Error", err.Error()))
+		os.Exit(1)
 	}
 
-}
-
-func connectToDB() *sqlx.DB {
-	err := gotenv.Load()
-	if err != nil {
-		log.Fatal("We can't get .env parameterth", err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	dns := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	db, err := sqlx.Open("postgres", dns)
-
-	log.Println("Connect to DB")
-	if err != nil {
-		log.Fatalf("We can't connect to DB: %v", err)
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Error Connect Ping: %v", err)
-	}
-	return db
 }

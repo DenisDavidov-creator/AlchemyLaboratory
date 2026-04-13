@@ -9,7 +9,7 @@ WORKDIR /app/db-service
 
 RUN go mod download
 
-RUN go build -o main ./cmd/main.go
+RUN go build -o main ./cmd/
 RUN wget -q -O /bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.47/grpc_health_probe-linux-amd64 \
     && chmod +x /bin/grpc_health_probe
 
