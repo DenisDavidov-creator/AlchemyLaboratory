@@ -12,11 +12,13 @@ import (
 	"context"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -62,6 +64,11 @@ func main() {
 	pb.RegisterIngredientServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterRecipesServiceServer(grpcServer, grpcAlchemyHandler)
 	pb.RegisterJobServiceServer(grpcServer, grpcJobHandler)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":9091", nil)
+	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
