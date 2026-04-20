@@ -69,6 +69,8 @@ services:
       interval: 5s
       retries: 5
     env_file: ./worker-service/.env
+    ports:
+      - "9092:9092"
     depends_on:
       db-service:
         condition: service_started

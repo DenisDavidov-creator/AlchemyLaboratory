@@ -5,12 +5,14 @@ import (
 	"alla/worker-service/internal/boiler-worker/service"
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	pb "alla/shared/pb"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/subosito/gotenv"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"google.golang.org/grpc"
@@ -48,6 +50,12 @@ func main() {
 	serviceBrewing := service.NewBoilerWorker(repoBrewing)
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":9092", nil)
+	}()
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
