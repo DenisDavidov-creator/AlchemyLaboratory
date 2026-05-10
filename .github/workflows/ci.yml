@@ -10,4 +10,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
-      - run: make test
+      - run: make init
+      - run: make test-unit

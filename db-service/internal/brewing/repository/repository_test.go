@@ -70,7 +70,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateJob(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name           string
 		wantErr        bool
@@ -156,6 +158,9 @@ func TestCreateJob(t *testing.T) {
 }
 
 func TestSetStatus(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		wantErr     bool
@@ -265,6 +270,9 @@ func TestSetStatus(t *testing.T) {
 }
 
 func TestGetBrewStatus(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		wantErr     bool

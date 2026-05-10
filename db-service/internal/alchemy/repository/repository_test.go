@@ -70,6 +70,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestCheckIngredientExistsByName(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name           string
 		ingName        string
@@ -147,7 +150,9 @@ func TestCheckIngredientExistsByName(t *testing.T) {
 }
 
 func TestPostIngredeints(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name     string
 		ingModel models.Ingredient
@@ -208,7 +213,9 @@ func TestPostIngredeints(t *testing.T) {
 }
 
 func TestAddIngredeints(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name             string
 		quantity         int
@@ -277,7 +284,9 @@ func TestAddIngredeints(t *testing.T) {
 }
 
 func TestGetIngredeints(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name     string
 		seedData []models.Ingredient
@@ -336,7 +345,9 @@ func TestGetIngredeints(t *testing.T) {
 }
 
 func TestGetRecipes(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name          string
 		inputData     models.Recipe
@@ -458,6 +469,9 @@ func TestGetRecipes(t *testing.T) {
 }
 
 func TestCreateRecipe(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		recipeName  string
@@ -530,6 +544,9 @@ func TestCreateRecipe(t *testing.T) {
 }
 
 func TestCreateRecipeIngredients(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		wantErr     bool
@@ -611,6 +628,9 @@ func TestCreateRecipeIngredients(t *testing.T) {
 }
 
 func TestGetRicpeID(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		wantErr     bool
@@ -687,6 +707,9 @@ func TestGetRicpeID(t *testing.T) {
 }
 
 func TestCheckingIngredients(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		name        string
 		wantErr     bool
@@ -761,6 +784,9 @@ func TestCheckingIngredients(t *testing.T) {
 }
 
 func TestCheckExistRecipeByName(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
 	tests := []struct {
 		Name          string
 		RecipeName    string
