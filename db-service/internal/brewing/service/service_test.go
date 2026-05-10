@@ -143,3 +143,165 @@ func TestStartBrewing(t *testing.T) {
 
 	}
 }
+
+func TestCreateJob(t *testing.T) {
+	tests := []struct {
+		Name          string
+		DTO           dto.JobDTO
+		ModelRes      models.BrewingJobs
+		WantError     bool
+		ExpectedError error
+		UUID          string
+	}{
+		{
+			Name: "Success",
+			DTO: dto.JobDTO{
+				RecipeID: 1,
+				Details:  "Something details",
+			},
+			WantError: false,
+			UUID:      "UUID",
+			ModelRes: models.BrewingJobs{
+				RecipeID: 1,
+				Status:   "queued",
+				Details:  "Something details",
+			},
+		},
+		{
+			Name: "Failed",
+			DTO: dto.JobDTO{
+				RecipeID: 1,
+				Details:  "Something details",
+			},
+			WantError: true,
+			UUID:      "UUID",
+			ModelRes: models.BrewingJobs{
+				RecipeID: 1,
+				Status:   "queued",
+				Details:  "Something details",
+			},
+			ExpectedError: ERROR_DB,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			brewingMockRepo := mocks.NewBrewingRepoInterface(t)
+			switch tt.Name {
+			case "Success":
+				brewingMockRepo.On("CreateJob", context.Background(), &tt.ModelRes).
+					Run(func(args mock.Arguments) {
+						out := args.Get(1).(*models.BrewingJobs)
+						out.PublicID = "UUID"
+					}).
+					Return(tt.ExpectedError)
+			case "Failed":
+				brewingMockRepo.On("CreateJob", context.Background(), &tt.ModelRes).
+					Run(func(args mock.Arguments) {
+						out := args.Get(1).(*models.BrewingJobs)
+						out.PublicID = "UUID"
+					}).
+					Return(tt.ExpectedError)
+			}
+
+			serv := service.NewBrewingService(brewingMockRepo, nil, nil)
+
+			uuid, err := serv.CreateJob(context.Background(), tt.DTO)
+			if tt.WantError {
+				assert.ErrorIs(t, err, tt.ExpectedError)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.UUID, uuid.JobUUID)
+		})
+	}
+}
+
+func TestGetBrewStatus(t *testing.T) {
+	tests := []struct {
+		Name          string
+		ExpectedError error
+		UUID          dto.JobUUIDDTO
+		Status        string
+		res           dto.JobStatusresponseDTO
+	}{
+		{
+			Name:          "Success",
+			ExpectedError: nil,
+			res: dto.JobStatusresponseDTO{
+				Status: "queued",
+			},
+			UUID:   dto.JobUUIDDTO{JobUUID: "UUID"},
+			Status: "queued",
+		},
+		{
+			Name:          "Failed",
+			ExpectedError: ERROR_DB,
+			UUID:          dto.JobUUIDDTO{JobUUID: "UUID"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			brewingMockRepo := mocks.NewBrewingRepoInterface(t)
+			switch tt.Name {
+			case "Success":
+				brewingMockRepo.On("GetBrewStatus", context.Background(), tt.UUID.JobUUID).Return(tt.Status, tt.ExpectedError)
+
+			case "Failed":
+				brewingMockRepo.On("GetBrewStatus", context.Background(), tt.UUID.JobUUID).Return("", tt.ExpectedError)
+			}
+
+			srv := service.NewBrewingService(brewingMockRepo, nil, nil)
+			dto, err := srv.GetBrewStatus(context.Background(), tt.UUID)
+
+			if tt.ExpectedError != nil {
+				assert.ErrorIs(t, err, tt.ExpectedError)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.Status, dto.Status)
+		})
+
+	}
+}
+
+func TestSetStatus(t *testing.T) {
+	tests := []struct {
+		Name          string
+		Req           dto.JobStatusDTO
+		expectedError error
+	}{
+		{
+			Name:          "Success",
+			expectedError: nil,
+			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "queued"},
+		},
+		{
+			Name:          "Failed",
+			expectedError: ERROR_DB,
+			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "queued"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			brewingMockRepo := mocks.NewBrewingRepoInterface(t)
+			switch tt.Name {
+			case "Success":
+				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status).Return(tt.expectedError)
+			case "Failed":
+				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status).Return(tt.expectedError)
+
+			}
+
+			srv := service.NewBrewingService(brewingMockRepo, nil, nil)
+			err := srv.SetStatus(context.Background(), tt.Req)
+
+			if tt.expectedError != nil {
+				assert.ErrorIs(t, err, tt.expectedError)
+				return
+			}
+
+			assert.NoError(t, err)
+
+		})
+	}
+}

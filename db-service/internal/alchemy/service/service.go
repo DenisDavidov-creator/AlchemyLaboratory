@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"github.com/redis/go-redis/v9"
 )
 
 //go:generate mockery --name=AlchemyServiceInterface
@@ -27,10 +25,10 @@ type AlchemyServiceInterface interface {
 type AclhemyService struct {
 	aRepo        repository.AlchemyRepoInterface
 	trans        transactor.TransactorInterface
-	redeisClient *redis.Client
+	redeisClient RedisClientInterface
 }
 
-func NewAlchemyService(aRepo repository.AlchemyRepoInterface, trans transactor.TransactorInterface, redeisClient *redis.Client) *AclhemyService {
+func NewAlchemyService(aRepo repository.AlchemyRepoInterface, trans transactor.TransactorInterface, redeisClient RedisClientInterface) *AclhemyService {
 	return &AclhemyService{
 		aRepo:        aRepo,
 		trans:        trans,
@@ -89,7 +87,6 @@ func (s *AclhemyService) GetIngredients(ctx context.Context) ([]dto.IngredientRe
 	}
 
 	return ingsResponse, nil
-
 }
 
 func (s *AclhemyService) PostRecipe(ctx context.Context, recipeDTO dto.RecipeDTO) (*dto.RecipeResponseDTO, error) {

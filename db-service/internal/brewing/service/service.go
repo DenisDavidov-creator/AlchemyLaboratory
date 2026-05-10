@@ -41,7 +41,7 @@ func (s *BrewingService) CreateJob(ctx context.Context, m dto.JobDTO) (*dto.JobU
 		Status:   CREATE_NEW_JOB,
 		Details:  m.Details,
 	}
-	_, err := s.BrewingRepo.CreateJob(ctx, &jobModel)
+	err := s.BrewingRepo.CreateJob(ctx, &jobModel)
 	if err != nil {
 		return nil, fmt.Errorf("CreateJob: %w", err)
 	}

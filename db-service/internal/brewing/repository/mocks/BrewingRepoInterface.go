@@ -15,33 +15,21 @@ type BrewingRepoInterface struct {
 }
 
 // CreateJob provides a mock function with given fields: ctx, m
-func (_m *BrewingRepoInterface) CreateJob(ctx context.Context, m *models.BrewingJobs) (*models.BrewingJobs, error) {
+func (_m *BrewingRepoInterface) CreateJob(ctx context.Context, m *models.BrewingJobs) error {
 	ret := _m.Called(ctx, m)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateJob")
 	}
 
-	var r0 *models.BrewingJobs
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.BrewingJobs) (*models.BrewingJobs, error)); ok {
-		return rf(ctx, m)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, *models.BrewingJobs) *models.BrewingJobs); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.BrewingJobs) error); ok {
 		r0 = rf(ctx, m)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.BrewingJobs)
-		}
+		r0 = ret.Error(0)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *models.BrewingJobs) error); ok {
-		r1 = rf(ctx, m)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // GetBrewStatus provides a mock function with given fields: ctx, uuid

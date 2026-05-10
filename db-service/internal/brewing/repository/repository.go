@@ -13,7 +13,7 @@ import (
 
 //go:generate mockery --name=BrewingRepoInterface
 type BrewingRepoInterface interface {
-	CreateJob(ctx context.Context, m *models.BrewingJobs) (*models.BrewingJobs, error)
+	CreateJob(ctx context.Context, m *models.BrewingJobs) error
 	GetBrewStatus(ctx context.Context, uuid string) (string, error)
 	SetStatus(ctx context.Context, uuid, status string) error
 }
@@ -28,18 +28,18 @@ func NewBrewingRepository(db *sqlx.DB) *BrewingRepo {
 	}
 }
 
-func (r *BrewingRepo) CreateJob(ctx context.Context, m *models.BrewingJobs) (*models.BrewingJobs, error) {
+func (r *BrewingRepo) CreateJob(ctx context.Context, m *models.BrewingJobs) error {
 	var id string
 	query := "INSERT INTO brewing_jobs (recipe_id, status, details) VALUES ($1, $2, $3) RETURNING public_id"
 
 	err := r.db.QueryRowContext(ctx, query, m.RecipeID, m.Status, m.Details).Scan(&id)
 
 	if err != nil {
-		return nil, fmt.Errorf("CreateJob: %w", err)
+		return fmt.Errorf("CreateJob: %w", err)
 	}
 
 	m.PublicID = id
-	return m, nil
+	return nil
 }
 
 func (r *BrewingRepo) GetBrewStatus(ctx context.Context, uuid string) (string, error) {

@@ -759,3 +759,57 @@ func TestCheckingIngredients(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckExistRecipeByName(t *testing.T) {
+	tests := []struct {
+		Name          string
+		RecipeName    string
+		ExistName     bool
+		ExpectedError error
+	}{
+		{
+			Name:          "Success - exist name",
+			RecipeName:    "Love potion",
+			ExistName:     true,
+			ExpectedError: nil,
+		},
+		{
+			Name:          "Success - doesn't exist name",
+			RecipeName:    "Poster",
+			ExistName:     false,
+			ExpectedError: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			_, err := testDB.Exec("TRUNCATE ingredients RESTART IDENTITY CASCADE")
+			if err != nil {
+				t.Fatalf("Error truncate: %v", err)
+			}
+
+			seed1 := models.Recipe{
+				Name:               "Love potion",
+				BrewingTimeSeconds: 10,
+				Ingredients: []models.RecipeIngredients{
+					{
+						IngredientID:   1,
+						QuantityNeeded: 3,
+					},
+				},
+			}
+
+			_, err = testRepo.PostIngredients(context.Background(), models.Ingredient{Name: "Soul", Quantity: 4})
+			assert.NoError(t, err)
+			err = testRepo.CreateRecipe(context.Background(), &seed1)
+
+			exist, err := testRepo.CheckExistRecipeByName(context.Background(), tt.RecipeName)
+
+			if tt.ExpectedError != nil {
+				assert.ErrorIs(t, err, tt.ExpectedError)
+			}
+
+			assert.Equal(t, tt.ExistName, exist)
+		})
+
+	}
+}

@@ -78,8 +78,9 @@ func TestCreateJob(t *testing.T) {
 		exprectedError error
 	}{
 		{
-			name:    "Success",
-			wantErr: false,
+			name:     "Success",
+			wantErr:  false,
+			recipeID: 1,
 		},
 	}
 	for _, tt := range tests {
@@ -141,15 +142,15 @@ func TestCreateJob(t *testing.T) {
 				Status:   "queued",
 			}
 
-			result, err := testBrewingRepo.CreateJob(context.Background(), &job)
+			err = testBrewingRepo.CreateJob(context.Background(), &job)
 
 			if tt.wantErr {
 				assert.ErrorIs(t, tt.exprectedError, err)
 				return
 			}
-			assert.Equal(t, result.Status, "queued")
-			assert.Equal(t, result.ID, job.ID)
-			assert.Equal(t, result.RecipeID, job.RecipeID)
+			assert.Equal(t, job.Status, "queued")
+			assert.Equal(t, job.RecipeID, tt.recipeID)
+			assert.NotEmpty(t, job.PublicID)
 		})
 	}
 }
@@ -233,17 +234,17 @@ func TestSetStatus(t *testing.T) {
 				RecipeID: inputRecipe.ID,
 				Status:   tt.status,
 			}
-			result, err := testBrewingRepo.CreateJob(context.Background(), &job)
+			err = testBrewingRepo.CreateJob(context.Background(), &job)
 
 			if err != nil {
 				t.Fatalf("TestGetBrewStatus: CreateJob: %v", err)
 			}
 
 			if tt.uuid != "" {
-				result.PublicID = tt.uuid
+				job.PublicID = tt.uuid
 			}
 
-			err = testBrewingRepo.SetStatus(context.Background(), result.PublicID, tt.status)
+			err = testBrewingRepo.SetStatus(context.Background(), job.PublicID, tt.status)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -253,7 +254,7 @@ func TestSetStatus(t *testing.T) {
 				return
 			}
 
-			status, err := testBrewingRepo.GetBrewStatus(context.Background(), result.PublicID)
+			status, err := testBrewingRepo.GetBrewStatus(context.Background(), job.PublicID)
 			if err != nil {
 				t.Fatalf("Error - get status")
 			}
@@ -343,17 +344,17 @@ func TestGetBrewStatus(t *testing.T) {
 				RecipeID: inputRecipe.ID,
 				Status:   tt.status,
 			}
-			result, err := testBrewingRepo.CreateJob(context.Background(), &job)
+			err = testBrewingRepo.CreateJob(context.Background(), &job)
 
 			if err != nil {
 				t.Fatalf("TestGetBrewStatus: CreateJob: %v", err)
 			}
 
 			if tt.uuid != "" {
-				result.PublicID = tt.uuid
+				job.PublicID = tt.uuid
 			}
 
-			status, err := testBrewingRepo.GetBrewStatus(context.Background(), result.PublicID)
+			status, err := testBrewingRepo.GetBrewStatus(context.Background(), job.PublicID)
 
 			if tt.wantErr {
 				assert.Error(t, err)

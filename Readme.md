@@ -60,8 +60,8 @@ make test-cover-html     # run with coverage report in html
 ## Extra tasks
 - [x] Structured logging (slog)
 - [x] Prometheus + Grafana metrics
-- [ ] Test coverage ≥ 60%
+- [x] Test coverage ≥ 60%
+- [x] CI/CD pipeline (GitHub Actions) (only CI)
 - [ ] Stress tests (k6)
 - [ ] Distributed tracing (OpenTelemetry)
-- [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Rate limiting in api-service
