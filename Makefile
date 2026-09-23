@@ -69,9 +69,7 @@ test-unit:
 
 
 test-integration:
-	cd api-service && go test -short ./...
-	cd db-service && go test -short  ./...
-	cd worker-service && go test -short  ./...
+	cd db-service && go test ./internal/alchemy/repository/... ./internal/brewing/repository/...
 
 
 test-cover:
@@ -87,7 +85,7 @@ test-cover-html:
 
 # swagger
 swagger:
-	cd api-service && swag init -g cmd/main.go -o ./docs --parseDependency --parseInternal
+	cd api-service && swag init -g cmd/main.go -o ./docs --parseDependency --parseDependencyLevel 1 --parseInternal
 
 
 # protofiles 
