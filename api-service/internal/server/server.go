@@ -70,8 +70,7 @@ func (s *Server) Run() error {
 	go func() {
 		s.logger.Info("Starting server...")
 		err := server.ListenAndServe()
-		if err != nil && errors.Is(err, http.ErrServerClosed) {
-
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			s.logger.Error("Start server", slog.String("error", err.Error()))
 			os.Exit(1)
 		}
