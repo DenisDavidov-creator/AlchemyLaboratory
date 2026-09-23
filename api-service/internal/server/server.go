@@ -104,8 +104,14 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 			slog.Duration("duration", time.Since(start)),
 		)
 
-		httpRequestTotal.WithLabelValues(r.Method, r.URL.Path, strconv.Itoa(rw.status)).Inc()
-		httpRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(time.Since(start).Seconds())
+		route := r.URL.Path
+		if cur := mux.CurrentRoute(r); cur != nil {
+			if tmpl, err := cur.GetPathTemplate(); err == nil {
+				route = tmpl
+			}
+		}
+		httpRequestTotal.WithLabelValues(r.Method, route, strconv.Itoa(rw.status)).Inc()
+		httpRequestDuration.WithLabelValues(r.Method, route).Observe(time.Since(start).Seconds())
 
 	})
 }
