@@ -6,6 +6,7 @@ import (
 	"alla/db-service/models"
 	"alla/shared/errorList"
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,11 @@ var testAlchemyRepo *alchemyRepo.AlchemyRepository
 var testDB *sqlx.DB
 
 func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		os.Exit(m.Run())
+	}
+
 	ctx := context.Background()
 
 	dbName := "testdb"
