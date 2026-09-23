@@ -12,5 +12,3 @@ scrape_configs:
     static_configs:
       - targets: ['worker-service:9092']
 
-# Allow remote write (k6 will push metrics here)
-# This setting is in command-line flag, not in yml
