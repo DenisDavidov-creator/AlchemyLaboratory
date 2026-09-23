@@ -5,7 +5,6 @@ import (
 	"alla/shared/pb"
 	"context"
 	"fmt"
-	"net/http"
 )
 
 //go:generate mockery --name=RepositoryBrewingInterface
@@ -15,13 +14,11 @@ type RepositoryBrewingInterface interface {
 }
 
 type repoBrewing struct {
-	httpClient    *http.Client
 	brewingClient pb.JobServiceClient
 }
 
 func NewRepoBrewing(brewingClient pb.JobServiceClient) *repoBrewing {
 	return &repoBrewing{
-		httpClient:    &http.Client{},
 		brewingClient: brewingClient,
 	}
 }

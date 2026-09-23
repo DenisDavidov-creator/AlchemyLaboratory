@@ -36,7 +36,6 @@ func main() {
 	}
 
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
-	WORKER_SERVICE_GRPC := os.Getenv("WORKER_SERVICE_GRPC")
 
 	connDB, err := grpc.NewClient(DB_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -44,13 +43,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer connDB.Close()
-
-	connWorker, err := grpc.NewClient(WORKER_SERVICE_GRPC, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		logger.Error("Connect to worker-service by gRPC", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
-	defer connWorker.Close()
 
 	kafkaClient, err := kgo.NewClient(
 		kgo.SeedBrokers(os.Getenv("KAFKA_ADDR")),

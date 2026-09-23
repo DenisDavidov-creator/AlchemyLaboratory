@@ -820,9 +820,7 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\aPostJob\x12\x1a.laboratory.PostJobRequest\x1a\x13.laboratory.JobUUID\x12C\n" +
 	"\rGetBrewStatus\x12\x13.laboratory.JobUUID\x1a\x1d.laboratory.JobStatusResponse\x12>\n" +
 	"\fChangeStatus\x12\x1b.laboratory.ChangeJobStatus\x1a\x11.laboratory.Empty\x128\n" +
-	"\fStartBrewing\x12\x13.laboratory.JobUUID\x1a\x13.laboratory.JobTime2=\n" +
-	"\vBrewService\x12.\n" +
-	"\x04Brew\x12\x13.laboratory.JobUUID\x1a\x11.laboratory.EmptyB\vZ\tshared/pbb\x06proto3"
+	"\fStartBrewing\x12\x13.laboratory.JobUUID\x1a\x13.laboratory.JobTimeB\vZ\tshared/pbb\x06proto3"
 
 var (
 	file_shared_proto_laboratory_proto_rawDescOnce sync.Once
@@ -867,19 +865,17 @@ var file_shared_proto_laboratory_proto_depIdxs = []int32{
 	10, // 10: laboratory.JobService.GetBrewStatus:input_type -> laboratory.JobUUID
 	12, // 11: laboratory.JobService.ChangeStatus:input_type -> laboratory.ChangeJobStatus
 	10, // 12: laboratory.JobService.StartBrewing:input_type -> laboratory.JobUUID
-	10, // 13: laboratory.BrewService.Brew:input_type -> laboratory.JobUUID
-	2,  // 14: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
-	3,  // 15: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
-	0,  // 16: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
-	7,  // 17: laboratory.RecipesService.CreateRecipe:output_type -> laboratory.RecipeResponse
-	8,  // 18: laboratory.RecipesService.GetRecipes:output_type -> laboratory.RecipeListResponse
-	10, // 19: laboratory.JobService.PostJob:output_type -> laboratory.JobUUID
-	11, // 20: laboratory.JobService.GetBrewStatus:output_type -> laboratory.JobStatusResponse
-	0,  // 21: laboratory.JobService.ChangeStatus:output_type -> laboratory.Empty
-	13, // 22: laboratory.JobService.StartBrewing:output_type -> laboratory.JobTime
-	0,  // 23: laboratory.BrewService.Brew:output_type -> laboratory.Empty
-	14, // [14:24] is the sub-list for method output_type
-	4,  // [4:14] is the sub-list for method input_type
+	2,  // 13: laboratory.IngredientService.CreateIngredient:output_type -> laboratory.IngredientResponse
+	3,  // 14: laboratory.IngredientService.GetIngredients:output_type -> laboratory.IngredientListResponse
+	0,  // 15: laboratory.IngredientService.AddIngredient:output_type -> laboratory.Empty
+	7,  // 16: laboratory.RecipesService.CreateRecipe:output_type -> laboratory.RecipeResponse
+	8,  // 17: laboratory.RecipesService.GetRecipes:output_type -> laboratory.RecipeListResponse
+	10, // 18: laboratory.JobService.PostJob:output_type -> laboratory.JobUUID
+	11, // 19: laboratory.JobService.GetBrewStatus:output_type -> laboratory.JobStatusResponse
+	0,  // 20: laboratory.JobService.ChangeStatus:output_type -> laboratory.Empty
+	13, // 21: laboratory.JobService.StartBrewing:output_type -> laboratory.JobTime
+	13, // [13:22] is the sub-list for method output_type
+	4,  // [4:13] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -898,7 +894,7 @@ func file_shared_proto_laboratory_proto_init() {
 			NumEnums:      0,
 			NumMessages:   14,
 			NumExtensions: 0,
-			NumServices:   4,
+			NumServices:   3,
 		},
 		GoTypes:           file_shared_proto_laboratory_proto_goTypes,
 		DependencyIndexes: file_shared_proto_laboratory_proto_depIdxs,

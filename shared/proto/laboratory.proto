@@ -19,10 +19,6 @@ service JobService {
     rpc StartBrewing(JobUUID) returns(JobTime);
 }
 
-service BrewService {
-    rpc Brew(JobUUID) returns(Empty);
-}
-
 message Empty{}
 
 message CreateIngredientRequest {
