@@ -47,6 +47,8 @@ definitions:
     properties:
       job_uuid:
         type: string
+    required:
+    - job_uuid
     type: object
   dto.RecipeDTO:
     properties:
@@ -136,6 +138,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dto.JobStatusDTO'
+        "400":
+          description: invalid uuid
+          schema:
+            type: object
         "404":
           description: job not found
           schema:

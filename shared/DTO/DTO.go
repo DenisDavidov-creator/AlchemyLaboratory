@@ -55,7 +55,7 @@ type JobDTO struct {
 }
 
 type JobUUIDDTO struct {
-	JobUUID string `json:"job_uuid"`
+	JobUUID string `json:"job_uuid" validate:"required,uuid4"`
 }
 
 type JobStatusresponseDTO struct {

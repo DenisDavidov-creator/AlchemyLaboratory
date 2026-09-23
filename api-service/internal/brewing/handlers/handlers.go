@@ -106,6 +106,7 @@ func (h *BrewingHandler) Brew(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param		 uuid query string true "Job UUID"
 // @Success      200 {object} dto.JobStatusDTO
+// @Failure      400 {object} object "invalid uuid"
 // @Failure      404 {object} object "job not found"
 // @Failure      500 {object} object
 // @Router       /brew/status [get]
@@ -116,6 +117,11 @@ func (h *BrewingHandler) StatusBrew(w http.ResponseWriter, r *http.Request) {
 	JobUUIDDTO := dto.JobUUIDDTO{
 		JobUUID: uuid,
 	}
+	if err := h.validate.Struct(JobUUIDDTO); err != nil {
+		h.sendError(w, errorList.ErrInconsistentData)
+		return
+	}
+
 	status, err := h.service.GetBrewStatus(ctx, JobUUIDDTO)
 	if err != nil {
 		h.sendError(w, err)

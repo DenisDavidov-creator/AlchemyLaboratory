@@ -11,12 +11,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestStatusBrew(t *testing.T) {
+
+	const validUUID = "6f1e2a3b-4c5d-4e6f-8a9b-0c1d2e3f4a5b"
 
 	tests := []struct {
 		name           string
@@ -26,18 +27,26 @@ func TestStatusBrew(t *testing.T) {
 		expectedStatus int
 	}{
 		{name: "Success - Returns status",
-			uuidParam: "fksjl-fsjdklfj-fsdjkldsjf-",
+			uuidParam: validUUID,
 			mockReturn: &dto.JobStatusresponseDTO{
-				Status: "queude",
+				Status: "queued",
 			},
 			mockErr:        nil,
 			expectedStatus: http.StatusOK,
 		},
 		{name: "Fail - Database fail",
-			uuidParam:      "fksjl-fsjdklfj-fsdjkldsjf-",
+			uuidParam:      validUUID,
 			mockReturn:     nil,
 			mockErr:        errors.New("DB fail"),
 			expectedStatus: http.StatusInternalServerError,
+		},
+		{name: "Fail - Invalid uuid",
+			uuidParam:      "not-a-uuid",
+			expectedStatus: http.StatusBadRequest,
+		},
+		{name: "Fail - Missing uuid",
+			uuidParam:      "",
+			expectedStatus: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
@@ -45,10 +54,11 @@ func TestStatusBrew(t *testing.T) {
 			mockService := mocks.NewBrewingServiceInterface(t)
 			handler := handlers.NewBrewingHandler(mockService)
 
-			mockService.On("GetBrewStatus", mock.Anything, mock.Anything).Return(tt.mockReturn, tt.mockErr)
+			if tt.expectedStatus != http.StatusBadRequest {
+				mockService.On("GetBrewStatus", mock.Anything, dto.JobUUIDDTO{JobUUID: tt.uuidParam}).Return(tt.mockReturn, tt.mockErr).Once()
+			}
 
-			req := httptest.NewRequest("get", "/brew/status/"+tt.uuidParam, nil)
-			req = mux.SetURLVars(req, map[string]string{"uuid": tt.uuidParam})
+			req := httptest.NewRequest(http.MethodGet, "/brew/status?uuid="+tt.uuidParam, nil)
 			w := httptest.NewRecorder()
 
 			handler.StatusBrew(w, req)

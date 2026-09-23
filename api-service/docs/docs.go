@@ -97,6 +97,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.JobStatusDTO"
                         }
                     },
+                    "400": {
+                        "description": "invalid uuid",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
                     "404": {
                         "description": "job not found",
                         "schema": {
@@ -370,6 +376,9 @@ const docTemplate = `{
         },
         "dto.JobUUIDDTO": {
             "type": "object",
+            "required": [
+                "job_uuid"
+            ],
             "properties": {
                 "job_uuid": {
                     "type": "string"
