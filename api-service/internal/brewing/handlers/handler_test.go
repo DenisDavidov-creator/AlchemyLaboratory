@@ -84,7 +84,7 @@ func TestBrew(t *testing.T) {
 				JobUUID: "I kissed a girl",
 			},
 			mockRepoErr:    nil,
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusAccepted,
 		}, {
 			name:           "Bad JSON",
 			inputJSON:      `{"recipe_id": "not-a-number"}`,

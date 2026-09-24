@@ -4,7 +4,6 @@ import (
 	"alla/api-service/internal/brewing/repository"
 	dto "alla/shared/DTO"
 	"context"
-	"log"
 )
 
 //go:generate mockery --name=BrewingServiceInterface
@@ -30,12 +29,10 @@ func (s *BrewingService) PostJob(ctx context.Context, jobDTO dto.JobDTO) (*dto.J
 		return nil, err
 	}
 
-	go func() {
-		err := s.Boiled(context.Background(), uuid)
-		if err != nil {
-			log.Printf("PostJob: %v", err)
-		}
-	}()
+	err = s.Boiled(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
 
 	return uuid, nil
 }

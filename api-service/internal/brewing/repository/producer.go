@@ -22,9 +22,13 @@ func (r *BrewingRepo) Boiled(ctx context.Context, req dto.JobUUIDDTO) error {
 		return fmt.Errorf("Boiled: marshal: %w", err)
 	}
 
-	r.kafkaClient.ProduceSync(ctx, &kgo.Record{
+	err = r.kafkaClient.ProduceSync(ctx, &kgo.Record{
 		Topic: brewTopic,
 		Value: msg,
-	})
+	}).FirstErr()
+
+	if err != nil {
+		return fmt.Errorf("Boiled: send to Kafka:%w", err)
+	}
 	return nil
 }

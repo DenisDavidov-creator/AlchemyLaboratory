@@ -63,5 +63,8 @@ make test-cover-html     # run with coverage report in html
 - [x] Test coverage ≥ 60%
 - [x] CI/CD pipeline (GitHub Actions) (only CI)
 - [x] Stress tests (k6)
-- [ ] Distributed tracing (OpenTelemetry)
-- [ ] Rate limiting in api-service
+
+
+
+Assumptions:
+ - When the API sends data to Kafka, we need to cover it into Transactional Outbox, or just when we can't send there set the job status to "failed"

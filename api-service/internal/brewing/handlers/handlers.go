@@ -70,7 +70,7 @@ func (h *BrewingHandler) sendResponse(w http.ResponseWriter, statusCode int, dat
 // @Accept       json
 // @Produce      json
 // @Param        brew body    dto.JobDTO true "Brew"
-// @Success      200 {object} dto.JobUUIDDTO
+// @Success      202 {object} dto.JobUUIDDTO
 // @Failure      400 {object} object "invalid request"
 // @Failure      404 {object} object "recipe not found"
 // @Failure      422 {object} object "ingredient not enough"
@@ -97,7 +97,7 @@ func (h *BrewingHandler) Brew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.sendResponse(w, http.StatusOK, m)
+	h.sendResponse(w, http.StatusAccepted, m)
 }
 
 // Brew godoc
