@@ -49,32 +49,23 @@ func main() {
 
 	serviceBrewing := service.NewBoilerWorker(repoBrewing)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
 		http.ListenAndServe(":9092", nil)
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-
-	go func() {
-		<-quit
-		logger.Info("Shouting down")
-		cancel()
-		kafkaClient.Close()
-		conn.Close()
-	}()
-
 	logger.Info("Starting Kafka consumer")
 	for {
 		fetches := kafkaClient.PollFetches(ctx)
-		if fetches.IsClientClosed() {
-			return
+		if ctx.Err() != nil || fetches.IsClientClosed() {
+			break
 		}
 		fetches.EachRecord(func(r *kgo.Record) {
 			ProcessRecord(ctx, r, kafkaClient, serviceBrewing, logger)
 		})
 	}
+	logger.Info("Shouting down")
 }

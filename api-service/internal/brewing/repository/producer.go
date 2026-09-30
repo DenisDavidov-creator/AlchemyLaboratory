@@ -28,7 +28,7 @@ func (r *BrewingRepo) Boiled(ctx context.Context, req dto.JobUUIDDTO) error {
 	}).FirstErr()
 
 	if err != nil {
-		return fmt.Errorf("Boiled: send to Kafka:%w", err)
+		return fmt.Errorf("Boiled: send to Kafka: %w", err)
 	}
 	return nil
 }
