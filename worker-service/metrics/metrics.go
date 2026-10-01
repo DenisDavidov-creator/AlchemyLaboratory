@@ -25,8 +25,46 @@ var (
 		},
 		[]string{},
 	)
+
+	JobsInFlight = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "worker_jobs_in_flight",
+			Help: "Jobs being processed right now",
+		},
+	)
+
+	PoolSize = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "worker_pool_size",
+			Help: "Configured worker pool capacity",
+		},
+	)
+
+	BatchSize = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "worker_batch_size",
+			Help:    "Records per polled batch",
+			Buckets: prometheus.ExponentialBuckets(1, 2, 12),
+		},
+	)
+
+	BatchDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "worker_batch_duration_seconds",
+			Help:    "Time spent processing one batch, from poll to last job",
+			Buckets: prometheus.ExponentialBuckets(0.1, 2, 12),
+		},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(MessageProcessedTotal, RetriesTotal, DlqTotal)
+	prometheus.MustRegister(
+		MessageProcessedTotal,
+		RetriesTotal,
+		DlqTotal,
+		JobsInFlight,
+		PoolSize,
+		BatchSize,
+		BatchDuration,
+	)
 }

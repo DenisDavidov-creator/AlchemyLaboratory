@@ -4,6 +4,7 @@ import (
 	"alla/worker-service/internal/boiler-worker/repository"
 	"alla/worker-service/internal/boiler-worker/service"
 	"alla/worker-service/internal/pool"
+	"alla/worker-service/metrics"
 	"context"
 	"log/slog"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"sync"
 	"syscall"
+	"time"
 
 	pb "alla/shared/pb"
 
@@ -60,7 +62,9 @@ func main() {
 		http.ListenAndServe(":9092", nil)
 	}()
 
-	workerPool := pool.New(poolSize(logger))
+	size := poolSize(logger)
+	workerPool := pool.New(size)
+	metrics.PoolSize.Set(float64(size))
 
 	logger.Info("Starting Kafka consumer")
 	for {
@@ -68,6 +72,8 @@ func main() {
 		if ctx.Err() != nil || fetches.IsClientClosed() {
 			break
 		}
+
+		start := time.Now()
 
 		var batch sync.WaitGroup
 		fetches.EachRecord(func(r *kgo.Record) {
@@ -78,6 +84,9 @@ func main() {
 			})
 		})
 		batch.Wait()
+
+		metrics.BatchSize.Observe(float64(fetches.NumRecords()))
+		metrics.BatchDuration.Observe(time.Since(start).Seconds())
 
 		if err := kafkaClient.CommitUncommittedOffsets(ctx); err != nil {
 			logger.Warn("Kafka commit",

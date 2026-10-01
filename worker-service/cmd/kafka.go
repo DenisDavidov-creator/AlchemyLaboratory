@@ -33,6 +33,9 @@ func NewKafkaClient(logger *slog.Logger) *kgo.Client {
 }
 
 func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, serviceBrewing service.ServiceInterface, logger *slog.Logger) {
+	metrics.JobsInFlight.Inc()
+	defer metrics.JobsInFlight.Dec()
+
 	var msg struct {
 		JobUUID string `json:"job_uuid"`
 	}
