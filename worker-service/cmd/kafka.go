@@ -47,16 +47,15 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 	)
 
 	jobLogger.Info("Started boiled")
-	if err := serviceBrewing.Boiled(context.Background(), dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
+	if err := serviceBrewing.Boiled(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
+		if ctx.Err() != nil {
+			jobLogger.Info("Brewing interrupted by shutdown")
+			return
+		}
 		if errors.Is(err, errorList.ErrIngredientNotEnough) {
 			jobLogger.Warn("Not enough ingredients:",
 				slog.String("err", err.Error()),
 			)
-			if err := kafkaClient.CommitRecords(ctx, r); err != nil {
-				logger.Warn("Kafka commit",
-					"err", err.Error(),
-				)
-			}
 			metrics.MessageProcessedTotal.WithLabelValues("error").Inc()
 			return
 		}
@@ -96,11 +95,6 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 		})
 		metrics.RetriesTotal.WithLabelValues().Inc()
 		return
-	}
-	if err := kafkaClient.CommitRecords(ctx, r); err != nil {
-		jobLogger.Warn("Kafka commit",
-			slog.String("err", err.Error()),
-		)
 	}
 	metrics.MessageProcessedTotal.WithLabelValues("success").Inc()
 }

@@ -16,70 +16,81 @@ import (
 var DB_ERROR error = errors.New("DB_ERROR")
 
 func TestBoiled(t *testing.T) {
+	uuid := dto.JobUUIDDTO{
+		JobUUID: "I've been staring at the edge of the water",
+	}
+
 	tests := []struct {
 		name          string
-		uuid          dto.JobUUIDDTO
-		getJobResult  *dto.JobTimeDTO
-		getJobError   error
-		setStatusErr  error
+		ctx           func() context.Context
+		setupMock     func(m *mocks.RepositoryBrewingInterface)
 		expectedError error
 	}{
 		{
 			name: "Success",
-			uuid: dto.JobUUIDDTO{
-				JobUUID: "I've been staring at the edge of the water",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0}, nil).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusCompleted}).
+					Return(nil).Once()
 			},
-			getJobResult: &dto.JobTimeDTO{
-				BrweingTime: 0,
-			},
-			getJobError:   nil,
-			setStatusErr:  nil,
 			expectedError: nil,
 		},
 		{
 			name: "Error - get time",
-			uuid: dto.JobUUIDDTO{
-				JobUUID: "I've been staring at the edge of the water",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(nil, DB_ERROR).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusFailed}).
+					Return(nil).Once()
 			},
-			getJobError:   DB_ERROR,
-			setStatusErr:  nil,
 			expectedError: DB_ERROR,
 		},
 		{
 			name: "Error - set status",
-			uuid: dto.JobUUIDDTO{
-				JobUUID: "I've been staring at the edge of the water",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0}, nil).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusCompleted}).
+					Return(DB_ERROR).Once()
 			},
-			getJobError:   nil,
-			setStatusErr:  DB_ERROR,
 			expectedError: DB_ERROR,
+		},
+		{
+			name: "Canceled while brewing",
+			ctx: func() context.Context {
+				ctx, cancel := context.WithCancel(context.Background())
+				cancel()
+				return ctx
+			},
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 3600}, nil).Once()
+			},
+			expectedError: context.Canceled,
 		},
 	}
 
 	for _, tt := range tests {
-		mockRepo := mocks.NewRepositoryBrewingInterface(t)
-		workerServ := service.NewBoilerWorker(mockRepo)
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := mocks.NewRepositoryBrewingInterface(t)
+			workerServ := service.NewBoilerWorker(mockRepo)
 
-		switch tt.name {
-		case "Success":
-			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
-			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
-		case "Error - get time":
-			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
-			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: "failed"}).Return(tt.setStatusErr)
-		case "Error - set status":
-			mockRepo.On("StartBrewing", mock.Anything, tt.uuid).Return(tt.getJobResult, tt.getJobError).Once()
-			mockRepo.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: tt.uuid.JobUUID, Status: status.StatusCompleted}).Return(tt.setStatusErr)
-		}
+			tt.setupMock(mockRepo)
 
-		err := workerServ.Boiled(context.Background(), tt.uuid)
+			ctx := context.Background()
+			if tt.ctx != nil {
+				ctx = tt.ctx()
+			}
 
-		if tt.expectedError != nil {
-			assert.ErrorIs(t, err, tt.expectedError)
-			return
-		}
+			err := workerServ.Boiled(ctx, uuid)
 
-		assert.NoError(t, err)
+			if tt.expectedError != nil {
+				assert.ErrorIs(t, err, tt.expectedError)
+				return
+			}
 
+			assert.NoError(t, err)
+		})
 	}
 }

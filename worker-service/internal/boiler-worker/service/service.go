@@ -37,8 +37,11 @@ func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
 		return err
 	}
 
-	time.Sleep(time.Duration(timeSeconds.BrweingTime) * time.Second)
-
+	select {
+	case <-time.After(time.Duration(timeSeconds.BrweingTime) * time.Second):
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 	changeStatus.Status = status.StatusCompleted
 	err = w.repo.SetStatus(ctx, changeStatus)
 	if err != nil {

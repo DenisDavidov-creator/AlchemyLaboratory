@@ -3,11 +3,14 @@ package main
 import (
 	"alla/worker-service/internal/boiler-worker/repository"
 	"alla/worker-service/internal/boiler-worker/service"
+	"alla/worker-service/internal/pool"
 	"context"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"sync"
 	"syscall"
 
 	pb "alla/shared/pb"
@@ -57,15 +60,50 @@ func main() {
 		http.ListenAndServe(":9092", nil)
 	}()
 
+	workerPool := pool.New(poolSize(logger))
+
 	logger.Info("Starting Kafka consumer")
 	for {
 		fetches := kafkaClient.PollFetches(ctx)
 		if ctx.Err() != nil || fetches.IsClientClosed() {
 			break
 		}
+
+		var batch sync.WaitGroup
 		fetches.EachRecord(func(r *kgo.Record) {
-			ProcessRecord(ctx, r, kafkaClient, serviceBrewing, logger)
+			batch.Add(1)
+			workerPool.Submit(func() {
+				defer batch.Done()
+				ProcessRecord(ctx, r, kafkaClient, serviceBrewing, logger)
+			})
 		})
+		batch.Wait()
+
+		if err := kafkaClient.CommitUncommittedOffsets(ctx); err != nil {
+			logger.Warn("Kafka commit",
+				slog.String("err", err.Error()),
+			)
+		}
 	}
-	logger.Info("Shouting down")
+
+	workerPool.Stop()
+	logger.Info("Shutting down")
+}
+
+func poolSize(logger *slog.Logger) int {
+	const defaultSize = 5
+
+	raw := os.Getenv("WORKER_POOL_SIZE")
+	if raw == "" {
+		return defaultSize
+	}
+
+	size, err := strconv.Atoi(raw)
+	if err != nil || size <= 0 {
+		logger.Error("invalid WORKER_POOL_SIZE",
+			slog.String("value", raw),
+		)
+		os.Exit(1)
+	}
+	return size
 }
