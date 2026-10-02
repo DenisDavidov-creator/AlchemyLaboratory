@@ -6,9 +6,11 @@ import (
 	errorList "alla/shared/errorList"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 //go:generate mockery --name=BrewingRepoInterface
@@ -35,6 +37,10 @@ func (r *BrewingRepo) CreateJob(ctx context.Context, m *models.BrewingJobs) erro
 	err := r.db.QueryRowContext(ctx, query, m.RecipeID, m.Status, m.Details).Scan(&id)
 
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == errorList.PgForeignKeyViolation {
+			return errorList.ErrRecipeNotFound
+		}
 		return fmt.Errorf("CreateJob: %w", err)
 	}
 

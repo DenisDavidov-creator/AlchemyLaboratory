@@ -6,7 +6,6 @@ import (
 	"alla/shared/pb"
 	"context"
 	"fmt"
-	"log"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -39,9 +38,10 @@ func (r *RepositoryAPI) PostIngredients(ctx context.Context, req dto.IngredientD
 		Description: req.Description,
 		Quantity:    int32(req.Quantity),
 	})
-	//TODO finish error handle
-
-	if status.Code(err) == codes.AlreadyExists {
+	if err != nil {
+		if status.Code(err) == codes.AlreadyExists {
+			return nil, errorList.ErrIngredientAlreadyExist
+		}
 		return nil, fmt.Errorf("PostIngredients: %w", err)
 	}
 	return &dto.IngredientResponseDTO{
@@ -55,8 +55,7 @@ func (r *RepositoryAPI) GetIngredients(ctx context.Context) ([]dto.IngredientRes
 
 	resp, err := r.ingredientClient.GetIngredients(ctx, &pb.Empty{})
 	if err != nil {
-		log.Println(err)
-		return nil, fmt.Errorf("GetIngredients: unexpected statusCode %d", status.Code(err))
+		return nil, fmt.Errorf("GetIngredients: unexpected statusCode %w", err)
 	}
 	var ings = []dto.IngredientResponseDTO{}
 
@@ -87,9 +86,14 @@ func (r *RepositoryAPI) PostRecipe(ctx context.Context, req dto.RecipeDTO) (*dto
 	}
 
 	resp, err := r.recipeClient.CreateRecipe(ctx, &reqRecipe)
-
 	if err != nil {
-		return nil, fmt.Errorf("GetRcipes: %w", err)
+		if status.Code(err) == codes.AlreadyExists {
+			return nil, errorList.ErrRecipeAlreadyExist
+		}
+		if status.Code(err) == codes.NotFound {
+			return nil, errorList.ErrIngredientNotFound
+		}
+		return nil, fmt.Errorf("PostRcipes: %w", err)
 	}
 
 	var ings = []dto.RecipeIngredientsDTO{}
@@ -116,12 +120,9 @@ func (r *RepositoryAPI) GetRecipes(ctx context.Context) ([]dto.RecipeResponseDTO
 
 	resp, err := r.recipeClient.GetRecipes(ctx, &pb.Empty{})
 	if err != nil {
-		log.Println(err)
-		if status.Code(err) == codes.Internal {
-			return nil, errorList.ErrInconsistentData
-		}
+		return nil, fmt.Errorf("GetRecipes: %w", err)
 	}
-	var results []dto.RecipeResponseDTO
+	results := []dto.RecipeResponseDTO{}
 	for _, value := range resp.Recipes {
 
 		var ings = []dto.RecipeIngredientsDTO{}

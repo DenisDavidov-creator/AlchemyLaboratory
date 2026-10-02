@@ -53,7 +53,7 @@ func (h *GrpcAlchemyHandler) GetIngredients(ctx context.Context, empty *pb.Empty
 
 	ings, err := h.service.GetIngredients(ctx)
 	if err != nil {
-		return nil, grpcStatus.Error(codes.NotFound, err.Error())
+		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}
 
 	var requestiIngs = pb.IngredientListResponse{}
@@ -88,7 +88,7 @@ func (h *GrpcAlchemyHandler) GetRecipes(ctx context.Context, empty *pb.Empty) (*
 
 	recipes, err := h.service.GetRecipes(ctx)
 	if err != nil {
-		return nil, grpcStatus.Error(codes.NotFound, err.Error())
+		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}
 
 	var requestiRecipes = pb.RecipeListResponse{}
@@ -136,6 +136,9 @@ func (h *GrpcAlchemyHandler) CreateRecipe(ctx context.Context, req *pb.PostRecip
 	if err != nil {
 		if errors.Is(err, errorList.ErrRecipeAlreadyExist) {
 			return nil, grpcStatus.Error(codes.AlreadyExists, err.Error())
+		}
+		if errors.Is(err, errorList.ErrCreateConnectionRecipeIngredient) {
+			return nil, grpcStatus.Error(codes.NotFound, err.Error())
 		}
 		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}

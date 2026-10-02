@@ -33,6 +33,9 @@ func (h *GrpcBrewingHandler) PostJob(ctx context.Context, req *pb.PostJobRequest
 
 	resp, err := h.service.CreateJob(ctx, inputReq)
 	if err != nil {
+		if errors.Is(err, errorList.ErrRecipeNotFound) {
+			return nil, grpcStatus.Error(codes.NotFound, err.Error())
+		}
 		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}
 
