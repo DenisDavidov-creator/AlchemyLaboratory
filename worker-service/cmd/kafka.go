@@ -83,6 +83,11 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 				Topic: "brew-jobs.dlq",
 				Value: r.Value,
 			})
+
+			err := serviceBrewing.MarkFailed(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID})
+			if err != nil {
+				jobLogger.Error("Technical error, mark failed", slog.String("err", err.Error()))
+			}
 			metrics.DlqTotal.WithLabelValues().Inc()
 			return
 		}

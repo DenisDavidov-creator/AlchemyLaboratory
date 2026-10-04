@@ -2,15 +2,18 @@ package service
 
 import (
 	dto "alla/shared/DTO"
+	"alla/shared/errorList"
 	status "alla/shared/status"
 	"alla/worker-service/internal/boiler-worker/repository"
 	"context"
+	"errors"
 	"time"
 )
 
 //go:generate mockery --name=BoilerWorkerInterface
 type ServiceInterface interface {
 	Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error
+	MarkFailed(ctx context.Context, uuid dto.JobUUIDDTO) error
 }
 
 type ServiceWorker struct {
@@ -31,8 +34,10 @@ func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
 	}
 
 	if err != nil {
-		if err := w.repo.SetStatus(ctx, changeStatus); err != nil {
-			return err
+		if errors.Is(err, errorList.ErrIngredientNotEnough) {
+			if err := w.repo.SetStatus(ctx, changeStatus); err != nil {
+				return err
+			}
 		}
 		return err
 	}
@@ -44,6 +49,18 @@ func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
 	}
 	changeStatus.Status = status.StatusCompleted
 	err = w.repo.SetStatus(ctx, changeStatus)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (w *ServiceWorker) MarkFailed(ctx context.Context, uuid dto.JobUUIDDTO) error {
+	changeStatus := dto.JobStatusDTO{
+		UUID:   uuid.JobUUID,
+		Status: status.StatusFailed,
+	}
+	err := w.repo.SetStatus(ctx, changeStatus)
 	if err != nil {
 		return err
 	}

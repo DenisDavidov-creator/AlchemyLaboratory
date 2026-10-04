@@ -2,9 +2,13 @@ package repository
 
 import (
 	dto "alla/shared/DTO"
+	"alla/shared/errorList"
 	"alla/shared/pb"
 	"context"
 	"fmt"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 //go:generate mockery --name=RepositoryBrewingInterface
@@ -27,6 +31,9 @@ func (r *repoBrewing) StartBrewing(ctx context.Context, req dto.JobUUIDDTO) (*dt
 
 	resp, err := r.brewingClient.StartBrewing(ctx, &pb.JobUUID{JobUUID: req.JobUUID})
 	if err != nil {
+		if status.Code(err) == codes.FailedPrecondition {
+			return nil, errorList.ErrIngredientNotEnough
+		}
 		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 

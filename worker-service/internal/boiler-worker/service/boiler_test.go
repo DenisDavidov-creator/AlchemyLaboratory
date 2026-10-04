@@ -2,6 +2,7 @@ package service_test
 
 import (
 	dto "alla/shared/DTO"
+	"alla/shared/errorList"
 	"alla/shared/status"
 	"alla/worker-service/internal/boiler-worker/repository/mocks"
 	"alla/worker-service/internal/boiler-worker/service"
@@ -41,10 +42,18 @@ func TestBoiled(t *testing.T) {
 			setupMock: func(m *mocks.RepositoryBrewingInterface) {
 				m.On("StartBrewing", mock.Anything, uuid).
 					Return(nil, DB_ERROR).Once()
+			},
+			expectedError: DB_ERROR,
+		},
+		{
+			name: "Error - ingredient not enough",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0}, errorList.ErrIngredientNotEnough).Once()
 				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusFailed}).
 					Return(nil).Once()
 			},
-			expectedError: DB_ERROR,
+			expectedError: errorList.ErrIngredientNotEnough,
 		},
 		{
 			name: "Error - set status",
