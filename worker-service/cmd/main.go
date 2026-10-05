@@ -6,12 +6,14 @@ import (
 	"alla/worker-service/internal/pool"
 	"alla/worker-service/metrics"
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -35,7 +37,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	kafkaClient := NewKafkaClient(logger)
+	if err := run(logger); err != nil {
+		logger.Error("worker stopped", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+
+}
+
+func run(logger *slog.Logger) error {
+	kafkaClient, err := NewKafkaClient(logger)
+	if err != nil {
+		return err
+	}
 	defer kafkaClient.Close()
 
 	DB_SERVICE_GRPC := os.Getenv("DB_SERVICE_GRPC")
@@ -44,7 +57,7 @@ func main() {
 		logger.Error("failed to connect to service by gRPC",
 			slog.String("err", err.Error()),
 		)
-		os.Exit(1)
+		return fmt.Errorf("connection error: %w", err)
 	}
 	defer conn.Close()
 
@@ -62,8 +75,14 @@ func main() {
 		http.ListenAndServe(":9092", nil)
 	}()
 
-	size := poolSize(logger)
+	size, err := poolSize(logger)
+	if err != nil {
+		return err
+	}
+
 	workerPool := pool.New(size)
+	defer workerPool.Stop()
+
 	metrics.PoolSize.Set(float64(size))
 
 	logger.Info("Starting Kafka consumer")
@@ -74,19 +93,32 @@ func main() {
 		}
 
 		start := time.Now()
-
+		var failed atomic.Bool
 		var batch sync.WaitGroup
 		fetches.EachRecord(func(r *kgo.Record) {
 			batch.Add(1)
 			workerPool.Submit(func() {
 				defer batch.Done()
-				ProcessRecord(ctx, r, kafkaClient, serviceBrewing, logger)
+				err := ProcessRecord(ctx, r, kafkaClient, serviceBrewing, logger)
+				if err != nil {
+					failed.Store(true)
+					logger.Error("process record", slog.String("err", err.Error()))
+				}
 			})
 		})
 		batch.Wait()
 
 		metrics.BatchSize.Observe(float64(fetches.NumRecords()))
 		metrics.BatchDuration.Observe(time.Since(start).Seconds())
+
+		if ctx.Err() != nil {
+			logger.Info("planned stopping")
+			return nil
+		}
+		if failed.Load() {
+			logger.Error("one of batch is failed")
+			return fmt.Errorf("error finished job")
+		}
 
 		if err := kafkaClient.CommitUncommittedOffsets(ctx); err != nil {
 			logger.Warn("Kafka commit",
@@ -95,24 +127,21 @@ func main() {
 		}
 	}
 
-	workerPool.Stop()
 	logger.Info("Shutting down")
+	return nil
 }
 
-func poolSize(logger *slog.Logger) int {
+func poolSize(logger *slog.Logger) (int, error) {
 	const defaultSize = 5
 
 	raw := os.Getenv("WORKER_POOL_SIZE")
 	if raw == "" {
-		return defaultSize
+		return defaultSize, nil
 	}
 
 	size, err := strconv.Atoi(raw)
 	if err != nil || size <= 0 {
-		logger.Error("invalid WORKER_POOL_SIZE",
-			slog.String("value", raw),
-		)
-		os.Exit(1)
+		return 0, fmt.Errorf("invalid worker pool size %q", raw)
 	}
-	return size
+	return size, nil
 }

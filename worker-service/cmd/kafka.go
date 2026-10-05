@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -15,7 +16,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func NewKafkaClient(logger *slog.Logger) *kgo.Client {
+func NewKafkaClient(logger *slog.Logger) (*kgo.Client, error) {
 	kafkaClient, err := kgo.NewClient(
 		kgo.SeedBrokers(os.Getenv("KAFKA_ADDR")),
 		kgo.ConsumerGroup("worker-group"),
@@ -27,12 +28,12 @@ func NewKafkaClient(logger *slog.Logger) *kgo.Client {
 			slog.String("err", err.Error()),
 			slog.String("addr", os.Getenv("KAFKA_ADDR")),
 		)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed connect to kafka %w", err)
 	}
-	return kafkaClient
+	return kafkaClient, nil
 }
 
-func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, serviceBrewing service.ServiceInterface, logger *slog.Logger) {
+func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, serviceBrewing service.ServiceInterface, logger *slog.Logger) error {
 	metrics.JobsInFlight.Inc()
 	defer metrics.JobsInFlight.Dec()
 
@@ -43,7 +44,7 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 		logger.Error("Unmarshal error",
 			slog.String("err", err.Error()),
 		)
-		return
+		return nil
 	}
 	jobLogger := logger.With(
 		slog.String("job_uuid", msg.JobUUID),
@@ -53,14 +54,14 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 	if err := serviceBrewing.Boiled(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
 		if ctx.Err() != nil {
 			jobLogger.Info("Brewing interrupted by shutdown")
-			return
+			return fmt.Errorf("interrupted by shutdown:%w", ctx.Err())
 		}
 		if errors.Is(err, errorList.ErrIngredientNotEnough) {
 			jobLogger.Warn("Not enough ingredients:",
 				slog.String("err", err.Error()),
 			)
 			metrics.MessageProcessedTotal.WithLabelValues("error").Inc()
-			return
+			return nil
 		}
 		jobLogger.Warn("Boiled, unexpected error", slog.String("err", err.Error()))
 
@@ -79,30 +80,37 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 			jobLogger.Error("max retries reached",
 				slog.Int("retry_count", retryCount),
 			)
-			kafkaClient.ProduceSync(ctx, &kgo.Record{
+			err := kafkaClient.ProduceSync(ctx, &kgo.Record{
 				Topic: "brew-jobs.dlq",
 				Value: r.Value,
-			})
-
-			err := serviceBrewing.MarkFailed(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID})
+			}).FirstErr()
 			if err != nil {
-				jobLogger.Error("Technical error, mark failed", slog.String("err", err.Error()))
+				return fmt.Errorf("add to dlq: %w", err)
+			}
+
+			err = serviceBrewing.MarkFailed(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID})
+			if err != nil {
+				jobLogger.Error("technical error, mark failed", slog.String("err", err.Error()))
 			}
 			metrics.DlqTotal.WithLabelValues().Inc()
-			return
+			return nil
 		}
-		jobLogger.Warn("Technical error, sending to retry",
+		jobLogger.Warn("technical error, sending to retry",
 			slog.Int("count-retry", retryCount+1),
 		)
-		kafkaClient.ProduceSync(ctx, &kgo.Record{
+		err := kafkaClient.ProduceSync(ctx, &kgo.Record{
 			Topic: "brew-jobs.retry",
 			Value: r.Value,
 			Headers: []kgo.RecordHeader{
 				{Key: "retry-count", Value: []byte(strconv.Itoa(retryCount + 1))},
 			},
-		})
+		}).FirstErr()
+		if err != nil {
+			return fmt.Errorf("add count to retry topic: %w", err)
+		}
 		metrics.RetriesTotal.WithLabelValues().Inc()
-		return
+		return nil
 	}
 	metrics.MessageProcessedTotal.WithLabelValues("success").Inc()
+	return nil
 }
