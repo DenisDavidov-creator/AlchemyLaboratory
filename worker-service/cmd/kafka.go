@@ -12,9 +12,12 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+var retryDelays = []time.Duration{5 * time.Second, 30 * time.Second, 2 * time.Minute}
 
 func NewKafkaClient(logger *slog.Logger) (*kgo.Client, error) {
 	kafkaClient, err := kgo.NewClient(
@@ -50,6 +53,23 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 		slog.String("job_uuid", msg.JobUUID),
 	)
 
+	var retryCount int
+	var err error
+	for _, h := range r.Headers {
+		if h.Key == "retry-count" {
+			retryCount, err = strconv.Atoi(string(h.Value))
+			if err != nil {
+				jobLogger.Error("invalid retry-count header",
+					slog.String("err", err.Error()),
+				)
+			}
+		}
+	}
+
+	err = waitForRetry(ctx, r, retryCount)
+	if err != nil {
+		return err
+	}
 	jobLogger.Info("Started boiled")
 	if err := serviceBrewing.Boiled(ctx, dto.JobUUIDDTO{JobUUID: msg.JobUUID}); err != nil {
 		if ctx.Err() != nil {
@@ -65,18 +85,7 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 		}
 		jobLogger.Warn("Boiled, unexpected error", slog.String("err", err.Error()))
 
-		var retryCount int
-		for _, h := range r.Headers {
-			if h.Key == "retry-count" {
-				retryCount, err = strconv.Atoi(string(h.Value))
-				if err != nil {
-					jobLogger.Error("invalid retry-count header",
-						slog.String("err", err.Error()),
-					)
-				}
-			}
-		}
-		if retryCount >= 3 {
+		if retryCount >= len(retryDelays) {
 			jobLogger.Error("max retries reached",
 				slog.Int("retry_count", retryCount),
 			)
@@ -112,5 +121,25 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 		return nil
 	}
 	metrics.MessageProcessedTotal.WithLabelValues("success").Inc()
+	return nil
+}
+
+func waitForRetry(ctx context.Context, r *kgo.Record, retryCount int) error {
+	var wait time.Duration
+
+	if retryCount > 0 && retryCount <= len(retryDelays) {
+		wait = retryDelays[retryCount-1]
+	}
+	readyAt := r.Timestamp.Add(wait)
+	delay := time.Until(readyAt)
+	if delay <= 0 {
+		return nil
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(delay):
+	}
 	return nil
 }
