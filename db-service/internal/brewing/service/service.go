@@ -32,13 +32,11 @@ func NewBrewingService(BrewingRepo brewingRepo.BrewingRepoInterface, AlchemyRepo
 	}
 }
 
-const CREATE_NEW_JOB = "queued"
-
 func (s *BrewingService) CreateJob(ctx context.Context, m dto.JobDTO) (*dto.JobUUIDDTO, error) {
 
 	jobModel := models.BrewingJobs{
 		RecipeID: m.RecipeID,
-		Status:   CREATE_NEW_JOB,
+		Status:   status.StatusQueued,
 		Details:  m.Details,
 	}
 	err := s.BrewingRepo.CreateJob(ctx, &jobModel)
@@ -75,7 +73,7 @@ func (s *BrewingService) StartBrewing(ctx context.Context, uuid dto.JobUUIDDTO) 
 		if err != nil {
 			return err
 		}
-		err = s.BrewingRepo.SetStatus(ctx, uuid.JobUUID, status.StatusQueued)
+		err = s.BrewingRepo.SetStatus(ctx, uuid.JobUUID, status.StatusBrewing)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,6 @@
 package models
 
 import (
-	dto "alla/shared/DTO"
 	"time"
 )
 
@@ -13,12 +12,4 @@ type BrewingJobs struct {
 	Details     string
 	CreatedAt   time.Time
 	CompletedAt time.Time
-}
-
-func BrewingJobsToModel(recipeID dto.JobDTO) BrewingJobs {
-	return BrewingJobs{
-		RecipeID:  recipeID.RecipeID,
-		Status:    "queued",
-		CreatedAt: time.Now(),
-	}
 }

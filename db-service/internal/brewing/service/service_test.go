@@ -7,6 +7,7 @@ import (
 	"alla/db-service/models"
 	dto "alla/shared/DTO"
 	"alla/shared/errorList"
+	"alla/shared/status"
 	"context"
 	"errors"
 	"testing"
@@ -99,7 +100,7 @@ func TestStartBrewing(t *testing.T) {
 					}).
 					Return(nil)
 				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(nil)
-				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, "queued").Return(nil)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, status.StatusBrewing).Return(nil)
 			case "Error - recipe not found":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, errorList.ErrRecipeNotFound)
 
@@ -126,7 +127,7 @@ func TestStartBrewing(t *testing.T) {
 					}).
 					Return(ERROR_DB)
 				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(nil)
-				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, "queued").Return(ERROR_DB)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, status.StatusBrewing).Return(ERROR_DB)
 			}
 
 			serv := service.NewBrewingService(brewingMockRepo, alchemyMockRepo, mockTrans)
