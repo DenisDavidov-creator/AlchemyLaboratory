@@ -392,3 +392,74 @@ func TestGetBrewStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRemaining(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	startBrewing := func(t *testing.T, uuid string) {
+		err := testBrewingRepo.SetStatus(context.Background(), uuid, status.StatusBrewing, []string{status.StatusQueued})
+		if err != nil {
+			t.Fatalf("start brewing: %v", err)
+		}
+	}
+
+	tests := []struct {
+		name       string
+		prepare    func(t *testing.T, uuid string)
+		wantStatus string
+		minRemain  int
+		maxRemain  int
+	}{
+		{
+			name:       "Just started",
+			prepare:    startBrewing,
+			wantStatus: status.StatusBrewing,
+			minRemain:  29,
+			maxRemain:  30,
+		},
+		{
+			name: "Brewing time is over",
+			prepare: func(t *testing.T, uuid string) {
+				startBrewing(t, uuid)
+				_, err := testDB.Exec("UPDATE brewing_jobs SET started_at = NOW() - interval '1 hour' WHERE public_id = $1", uuid)
+				if err != nil {
+					t.Fatalf("shift started_at: %v", err)
+				}
+			},
+			wantStatus: status.StatusBrewing,
+			minRemain:  0,
+			maxRemain:  0,
+		},
+		{
+			name:       "Not started",
+			prepare:    func(t *testing.T, uuid string) {},
+			wantStatus: status.StatusQueued,
+			minRemain:  0,
+			maxRemain:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uuid := createJob(t, status.StatusQueued)
+			tt.prepare(t, uuid)
+
+			gotStatus, remaining, err := testBrewingRepo.GetRemaining(context.Background(), uuid)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, gotStatus)
+			assert.GreaterOrEqual(t, remaining, tt.minRemain)
+			assert.LessOrEqual(t, remaining, tt.maxRemain)
+		})
+	}
+
+	t.Run("Error - job not found", func(t *testing.T) {
+		createJob(t, status.StatusQueued)
+
+		_, _, err := testBrewingRepo.GetRemaining(context.Background(), "00000000-0000-0000-0000-000000000000")
+
+		assert.ErrorIs(t, err, errorList.ErrJobNotFound)
+	})
+}

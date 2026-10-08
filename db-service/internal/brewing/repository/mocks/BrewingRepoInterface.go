@@ -60,6 +60,41 @@ func (_m *BrewingRepoInterface) GetBrewStatus(ctx context.Context, uuid string) 
 	return r0, r1
 }
 
+// GetRemaining provides a mock function with given fields: ctx, uuid
+func (_m *BrewingRepoInterface) GetRemaining(ctx context.Context, uuid string) (string, int, error) {
+	ret := _m.Called(ctx, uuid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRemaining")
+	}
+
+	var r0 string
+	var r1 int
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, int, error)); ok {
+		return rf(ctx, uuid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, uuid)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) int); ok {
+		r1 = rf(ctx, uuid)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
+		r2 = rf(ctx, uuid)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // SetStatus provides a mock function with given fields: ctx, uuid, status, from
 func (_m *BrewingRepoInterface) SetStatus(ctx context.Context, uuid string, status string, from []string) error {
 	ret := _m.Called(ctx, uuid, status, from)

@@ -18,6 +18,7 @@ type BrewingRepoInterface interface {
 	CreateJob(ctx context.Context, m *models.BrewingJobs) error
 	GetBrewStatus(ctx context.Context, uuid string) (string, error)
 	SetStatus(ctx context.Context, uuid, status string, from []string) error
+	GetRemaining(ctx context.Context, uuid string) (status string, remainingSec int, err error)
 }
 
 type BrewingRepo struct {
@@ -107,4 +108,33 @@ func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string, from [
 	}
 
 	return nil
+}
+
+func (r *BrewingRepo) GetRemaining(ctx context.Context, uuid string) (string, int, error) {
+	query := `
+		SELECT
+			bj.status,
+			COALESCE(
+				GREATEST(0, CEIL(EXTRACT(EPOCH FROM
+					bj.started_at + make_interval(secs => r.brewing_time_seconds) - NOW()
+				)))::int,
+			0) AS remaining
+		FROM brewing_jobs bj
+		JOIN recipes r ON r.id = bj.recipe_id
+		WHERE bj.public_id = $1
+	`
+
+	var statTime struct {
+		Status string `db:"status"`
+		Remain int    `db:"remaining"`
+	}
+
+	err := r.db.GetContext(ctx, &statTime, query, uuid)
+	if err == sql.ErrNoRows {
+		return "", 0, errorList.ErrJobNotFound
+	}
+	if err != nil {
+		return "", 0, fmt.Errorf("GetRemaining: %w", err)
+	}
+	return statTime.Status, statTime.Remain, nil
 }
