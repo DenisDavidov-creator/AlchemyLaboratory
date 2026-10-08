@@ -238,15 +238,13 @@ func (r *AlchemyRepository) GetRecipeID(ctx context.Context, uuid string) (int, 
 			brewing_jobs bj 
 		WHERE 
 			bj.public_id = $1 
-			AND bj.status = 'queued' 
-		FOR UPDATE
 	`
 	var data GetIDRecipeIDStruct
 
 	err := r.db.GetContext(ctx, &data, query, uuid)
 
 	if err == sql.ErrNoRows {
-		return 0, errorList.ErrRecipeNotFound
+		return 0, errorList.ErrJobNotFound
 	}
 
 	if err != nil {

@@ -34,6 +34,9 @@ func (r *repoBrewing) StartBrewing(ctx context.Context, req dto.JobUUIDDTO) (*dt
 		if status.Code(err) == codes.FailedPrecondition {
 			return nil, errorList.ErrIngredientNotEnough
 		}
+		if status.Code(err) == codes.Aborted {
+			return nil, errorList.ErrInvalidStatusTransition
+		}
 		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
@@ -46,6 +49,9 @@ func (r *repoBrewing) SetStatus(ctx context.Context, req dto.JobStatusDTO) error
 		Uuid:   req.UUID,
 		Status: req.Status,
 	})
+	if status.Code(err) == codes.Aborted {
+		return errorList.ErrInvalidStatusTransition
+	}
 	if err != nil {
 		return fmt.Errorf("SetStatus: %w", err)
 	}

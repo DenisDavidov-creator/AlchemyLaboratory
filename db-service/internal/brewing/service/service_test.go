@@ -27,6 +27,8 @@ func TestStartBrewing(t *testing.T) {
 		ings          []models.RecipeIngredients
 		brewingTime   int
 		UUID          dto.JobUUIDDTO
+		status        string
+		from          []string
 	}{
 		{
 			Name:          "Success",
@@ -43,6 +45,8 @@ func TestStartBrewing(t *testing.T) {
 			},
 			brewingTime: 10,
 			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:      status.StatusBrewing,
+			from:        []string{status.StatusQueued},
 		},
 		{
 			Name:          "Error - recipe not found",
@@ -64,6 +68,8 @@ func TestStartBrewing(t *testing.T) {
 			},
 			brewingTime: 10,
 			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:      "brewing",
+			from:        []string{"queued"},
 		},
 		{
 			Name:          "Error - wrong set status",
@@ -80,6 +86,8 @@ func TestStartBrewing(t *testing.T) {
 			},
 			brewingTime: 10,
 			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:      "brewing",
+			from:        []string{"queued"},
 		},
 	}
 	for _, tt := range tests {
@@ -100,7 +108,7 @@ func TestStartBrewing(t *testing.T) {
 					}).
 					Return(nil)
 				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(nil)
-				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, status.StatusBrewing).Return(nil)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(nil)
 			case "Error - recipe not found":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, errorList.ErrRecipeNotFound)
 
@@ -114,6 +122,7 @@ func TestStartBrewing(t *testing.T) {
 						fn(context.Background())
 					}).
 					Return(errorList.ErrIngredientNotEnough)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(nil)
 				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(errorList.ErrIngredientNotEnough)
 
 			case "Error - wrong set status":
@@ -126,8 +135,7 @@ func TestStartBrewing(t *testing.T) {
 						fn(context.Background())
 					}).
 					Return(ERROR_DB)
-				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(nil)
-				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, status.StatusBrewing).Return(ERROR_DB)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(ERROR_DB)
 			}
 
 			serv := service.NewBrewingService(brewingMockRepo, alchemyMockRepo, mockTrans)
@@ -269,17 +277,25 @@ func TestSetStatus(t *testing.T) {
 	tests := []struct {
 		Name          string
 		Req           dto.JobStatusDTO
+		from          []string
 		expectedError error
 	}{
 		{
 			Name:          "Success",
 			expectedError: nil,
-			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "queued"},
+			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "brewing"},
+			from:          []string{status.StatusQueued},
 		},
 		{
 			Name:          "Failed",
 			expectedError: ERROR_DB,
-			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "queued"},
+			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "failed"},
+			from:          []string{status.StatusBrewing, status.StatusQueued},
+		},
+		{
+			Name:          "Error - unexpected status",
+			expectedError: errorList.ErrUnexpectedStatus,
+			Req:           dto.JobStatusDTO{UUID: "UUID", Status: "Meow"},
 		},
 	}
 	for _, tt := range tests {
@@ -287,9 +303,9 @@ func TestSetStatus(t *testing.T) {
 			brewingMockRepo := mocks.NewBrewingRepoInterface(t)
 			switch tt.Name {
 			case "Success":
-				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status).Return(tt.expectedError)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status, tt.from).Return(tt.expectedError)
 			case "Failed":
-				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status).Return(tt.expectedError)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.Req.UUID, tt.Req.Status, tt.from).Return(tt.expectedError)
 
 			}
 

@@ -28,3 +28,7 @@ var ErrJobNotFound = errors.New("Job not found")
 // requset
 var ErrInconsistentData = errors.New("Invalid request data")
 var ErrWrongJsonFormat = errors.New("Invalid request format")
+var ErrInvalidStatusTransition = errors.New("Invalid status transition")
+
+// statuses
+var ErrUnexpectedStatus = errors.New("Unexpected status")

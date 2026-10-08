@@ -17,7 +17,7 @@ import (
 type BrewingRepoInterface interface {
 	CreateJob(ctx context.Context, m *models.BrewingJobs) error
 	GetBrewStatus(ctx context.Context, uuid string) (string, error)
-	SetStatus(ctx context.Context, uuid, status string) error
+	SetStatus(ctx context.Context, uuid, status string, from []string) error
 }
 
 type BrewingRepo struct {
@@ -69,7 +69,7 @@ func (r *BrewingRepo) GetBrewStatus(ctx context.Context, uuid string) (string, e
 	return status, nil
 }
 
-func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string) error {
+func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string, from []string) error {
 
 	tx := transactor.GetTx(ctx)
 
@@ -77,17 +77,19 @@ func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string) error 
 		UPDATE 
 			brewing_jobs
 		SET
-			status = $1,
-			completed_at = NOW()
+			status = $1::text,
+			completed_at = CASE
+				WHEN $1::text IN ('completed', 'failed') THEN now()
+			END
 		WHERE 
-			public_id = $2
+			public_id = $2 AND status = ANY($3)
 	`
 	var res sql.Result
 	var err error
 	if tx != nil {
-		res, err = tx.Exec(query, status, uuid)
+		res, err = tx.ExecContext(ctx, query, status, uuid, pq.Array(from))
 	} else {
-		res, err = r.db.Exec(query, status, uuid)
+		res, err = r.db.ExecContext(ctx, query, status, uuid, pq.Array(from))
 	}
 	if err != nil {
 		return fmt.Errorf("SetStatus: %w", err)
@@ -95,7 +97,10 @@ func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string) error 
 
 	rows, _ := res.RowsAffected()
 	if rows == 0 {
-		return errorList.ErrJobNotFound
+		if _, err := r.GetBrewStatus(ctx, uuid); err != nil {
+			return err
+		}
+		return errorList.ErrInvalidStatusTransition
 	}
 
 	return nil

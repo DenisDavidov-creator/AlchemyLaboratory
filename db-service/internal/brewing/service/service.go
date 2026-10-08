@@ -6,6 +6,7 @@ import (
 	"alla/db-service/internal/transactor"
 	"alla/db-service/models"
 	dto "alla/shared/DTO"
+	"alla/shared/errorList"
 	status "alla/shared/status"
 	"context"
 	"fmt"
@@ -68,15 +69,22 @@ func (s *BrewingService) StartBrewing(ctx context.Context, uuid dto.JobUUIDDTO) 
 		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
+	allowedTransitions, err := CheckStatus(status.StatusBrewing)
+	if err != nil {
+		return nil, fmt.Errorf("service: %w", err)
+	}
+
 	err = s.Trans.WithinTransaction(ctx, func(ctx context.Context) error {
+		err = s.BrewingRepo.SetStatus(ctx, uuid.JobUUID, status.StatusBrewing, allowedTransitions)
+		if err != nil {
+			return err
+		}
+
 		err = s.AlchemyRepo.CheckingIngridients(ctx, ingredients)
 		if err != nil {
 			return err
 		}
-		err = s.BrewingRepo.SetStatus(ctx, uuid.JobUUID, status.StatusBrewing)
-		if err != nil {
-			return err
-		}
+
 		return nil
 	})
 
@@ -102,9 +110,28 @@ func (s *BrewingService) GetBrewStatus(ctx context.Context, uuid dto.JobUUIDDTO)
 }
 
 func (s *BrewingService) SetStatus(ctx context.Context, req dto.JobStatusDTO) error {
-	err := s.BrewingRepo.SetStatus(ctx, req.UUID, req.Status)
+
+	allowedTransitions, err := CheckStatus(req.Status)
 	if err != nil {
-		return fmt.Errorf("Service: %w", err)
+		return fmt.Errorf("service: %w", err)
+	}
+	err = s.BrewingRepo.SetStatus(ctx, req.UUID, req.Status, allowedTransitions)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
 	}
 	return nil
+}
+
+func CheckStatus(wantedStatus string) ([]string, error) {
+	var allowedTransitions = map[string][]string{
+		status.StatusBrewing:   {status.StatusQueued},
+		status.StatusCompleted: {status.StatusBrewing},
+		status.StatusFailed:    {status.StatusBrewing, status.StatusQueued},
+	}
+	from, ok := allowedTransitions[wantedStatus]
+	if !ok {
+		return nil, errorList.ErrUnexpectedStatus
+	}
+	return from, nil
+
 }

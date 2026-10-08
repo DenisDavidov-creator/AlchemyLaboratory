@@ -52,6 +52,12 @@ func (h *GrpcBrewingHandler) StartBrewing(ctx context.Context, req *pb.JobUUID) 
 		if errors.Is(err, errorList.ErrIngredientNotEnough) {
 			return nil, grpcStatus.Error(codes.FailedPrecondition, err.Error())
 		}
+		if errors.Is(err, errorList.ErrUnexpectedStatus) {
+			return nil, grpcStatus.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, errorList.ErrInvalidStatusTransition) {
+			return nil, grpcStatus.Error(codes.Aborted, err.Error())
+		}
 		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}
 
@@ -69,6 +75,12 @@ func (h *GrpcBrewingHandler) ChangeStatus(ctx context.Context, req *pb.ChangeJob
 	if err != nil {
 		if errors.Is(err, errorList.ErrJobNotFound) {
 			return nil, grpcStatus.Error(codes.NotFound, err.Error())
+		}
+		if errors.Is(err, errorList.ErrUnexpectedStatus) {
+			return nil, grpcStatus.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, errorList.ErrInvalidStatusTransition) {
+			return nil, grpcStatus.Error(codes.Aborted, err.Error())
 		}
 		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}

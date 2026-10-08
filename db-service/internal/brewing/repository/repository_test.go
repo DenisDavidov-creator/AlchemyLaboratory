@@ -5,7 +5,9 @@ import (
 	brewingRepo "alla/db-service/internal/brewing/repository"
 	"alla/db-service/models"
 	"alla/shared/errorList"
+	"alla/shared/status"
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -168,111 +170,114 @@ func TestSetStatus(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	tests := []struct {
-		name        string
-		wantErr     bool
-		uuid        string
-		expectedErr error
-		status      string
+		name            string
+		initial         string
+		to              string
+		from            []string
+		expectedErr     error
+		wantStatus      string
+		wantCompletedAt bool
 	}{
 		{
-			name:    "Success",
-			wantErr: false,
-			status:  "Nya",
+			name:       "queued -> brewing",
+			initial:    status.StatusQueued,
+			to:         status.StatusBrewing,
+			from:       []string{status.StatusQueued},
+			wantStatus: status.StatusBrewing,
 		},
 		{
-			name:        "Error - wrong uuid",
-			uuid:        "00000000-0000-0000-0000-000000000000",
-			wantErr:     true,
-			expectedErr: errorList.ErrJobNotFound,
+			name:            "brewing -> completed",
+			initial:         status.StatusBrewing,
+			to:              status.StatusCompleted,
+			from:            []string{status.StatusBrewing},
+			wantStatus:      status.StatusCompleted,
+			wantCompletedAt: true,
+		},
+		{
+			name:            "queued -> failed",
+			initial:         status.StatusQueued,
+			to:              status.StatusFailed,
+			from:            []string{status.StatusQueued, status.StatusBrewing},
+			wantStatus:      status.StatusFailed,
+			wantCompletedAt: true,
+		},
+		{
+			name:        "Error - completed -> failed",
+			initial:     status.StatusCompleted,
+			to:          status.StatusFailed,
+			from:        []string{status.StatusQueued, status.StatusBrewing},
+			expectedErr: errorList.ErrInvalidStatusTransition,
+			wantStatus:  status.StatusCompleted,
+		},
+		{
+			name:        "Error - queued -> completed",
+			initial:     status.StatusQueued,
+			to:          status.StatusCompleted,
+			from:        []string{status.StatusBrewing},
+			expectedErr: errorList.ErrInvalidStatusTransition,
+			wantStatus:  status.StatusQueued,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := testDB.Exec("TRUNCATE ingredients, recipes, recipe_ingredients RESTART IDENTITY CASCADE")
+			uuid := createJob(t, tt.initial)
+
+			err := testBrewingRepo.SetStatus(context.Background(), uuid, tt.to, tt.from)
+
+			if tt.expectedErr != nil {
+				assert.ErrorIs(t, err, tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			var job struct {
+				Status      string       `db:"status"`
+				CompletedAt sql.NullTime `db:"completed_at"`
+			}
+			err = testDB.Get(&job, "SELECT status, completed_at FROM brewing_jobs WHERE public_id = $1", uuid)
 			if err != nil {
-				t.Fatalf("Error truncate: %v", err)
+				t.Fatalf("read job: %v", err)
 			}
-
-			_, err = testAlchemyRepo.PostIngredients(context.Background(), models.Ingredient{
-				Name:     "love",
-				Quantity: 10,
-			})
-			assert.NoError(t, err)
-			_, err = testAlchemyRepo.PostIngredients(context.Background(), models.Ingredient{
-				Name:     "Soul",
-				Quantity: 10,
-			})
-			assert.NoError(t, err)
-
-			inputRecipe := models.Recipe{
-				Name:               "love soul",
-				BrewingTimeSeconds: 30,
-				Ingredients: []models.RecipeIngredients{
-					{
-						IngredientID:   1,
-						QuantityNeeded: 10,
-					},
-					{
-						IngredientID:   2,
-						QuantityNeeded: 4,
-					},
-				},
-			}
-
-			err = testAlchemyRepo.CreateRecipe(context.Background(), &inputRecipe)
-			if err != nil {
-				t.Fatalf("TestGetBrewStatus: CreateRecipe: %v", err)
-			}
-
-			var valueStrings = []string{}
-			var valueArgs = []any{}
-			for i, value := range inputRecipe.Ingredients {
-				p1 := i*3 + 1
-				p2 := i*3 + 2
-				p3 := i*3 + 3
-				valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d)", p1, p2, p3))
-				valueArgs = append(valueArgs, inputRecipe.ID, value.IngredientID, value.QuantityNeeded)
-
-			}
-
-			err = testAlchemyRepo.CreateRecipeIngredients(context.Background(), valueStrings, valueArgs)
-			if err != nil {
-				t.Fatalf("TestGetBrewStatus: CreateRecipeIngredients: %v", err)
-			}
-
-			job := models.BrewingJobs{
-				RecipeID: inputRecipe.ID,
-				Status:   tt.status,
-			}
-			err = testBrewingRepo.CreateJob(context.Background(), &job)
-
-			if err != nil {
-				t.Fatalf("TestGetBrewStatus: CreateJob: %v", err)
-			}
-
-			if tt.uuid != "" {
-				job.PublicID = tt.uuid
-			}
-
-			err = testBrewingRepo.SetStatus(context.Background(), job.PublicID, tt.status)
-
-			if tt.wantErr {
-				assert.Error(t, err)
-				if tt.expectedErr != nil {
-					assert.ErrorIs(t, tt.expectedErr, err)
-				}
-				return
-			}
-
-			status, err := testBrewingRepo.GetBrewStatus(context.Background(), job.PublicID)
-			if err != nil {
-				t.Fatalf("Error - get status")
-			}
-			assert.NoError(t, err)
-			assert.Equal(t, tt.status, status)
+			assert.Equal(t, tt.wantStatus, job.Status)
+			assert.Equal(t, tt.wantCompletedAt, job.CompletedAt.Valid)
 		})
 	}
+
+	t.Run("Error - job not found", func(t *testing.T) {
+		createJob(t, status.StatusQueued)
+
+		err := testBrewingRepo.SetStatus(context.Background(), "00000000-0000-0000-0000-000000000000",
+			status.StatusBrewing, []string{status.StatusQueued})
+
+		assert.ErrorIs(t, err, errorList.ErrJobNotFound)
+	})
+}
+
+func createJob(t *testing.T, jobStatus string) string {
+	t.Helper()
+
+	_, err := testDB.Exec("TRUNCATE ingredients, recipes, recipe_ingredients, brewing_jobs RESTART IDENTITY CASCADE")
+	if err != nil {
+		t.Fatalf("truncate: %v", err)
+	}
+
+	recipe := models.Recipe{
+		Name:               "love soul",
+		BrewingTimeSeconds: 30,
+	}
+	if err := testAlchemyRepo.CreateRecipe(context.Background(), &recipe); err != nil {
+		t.Fatalf("create recipe: %v", err)
+	}
+
+	job := models.BrewingJobs{
+		RecipeID: recipe.ID,
+		Status:   jobStatus,
+	}
+	if err := testBrewingRepo.CreateJob(context.Background(), &job); err != nil {
+		t.Fatalf("create job: %v", err)
+	}
+	return job.PublicID
 }
 
 func TestGetBrewStatus(t *testing.T) {

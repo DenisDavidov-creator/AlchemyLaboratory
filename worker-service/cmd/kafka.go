@@ -83,6 +83,13 @@ func ProcessRecord(ctx context.Context, r *kgo.Record, kafkaClient *kgo.Client, 
 			metrics.MessageProcessedTotal.WithLabelValues("error").Inc()
 			return nil
 		}
+		if errors.Is(err, errorList.ErrInvalidStatusTransition) {
+			jobLogger.Info("duplicate message skipping:",
+				slog.String("err", err.Error()),
+			)
+			metrics.MessageProcessedTotal.WithLabelValues("duplicate").Inc()
+			return nil
+		}
 		jobLogger.Warn("Boiled, unexpected error", slog.String("err", err.Error()))
 
 		if retryCount >= len(retryDelays) {
