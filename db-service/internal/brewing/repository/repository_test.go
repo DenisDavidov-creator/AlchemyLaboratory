@@ -177,13 +177,15 @@ func TestSetStatus(t *testing.T) {
 		expectedErr     error
 		wantStatus      string
 		wantCompletedAt bool
+		wantStartedAt   bool
 	}{
 		{
-			name:       "queued -> brewing",
-			initial:    status.StatusQueued,
-			to:         status.StatusBrewing,
-			from:       []string{status.StatusQueued},
-			wantStatus: status.StatusBrewing,
+			name:          "queued -> brewing",
+			initial:       status.StatusQueued,
+			to:            status.StatusBrewing,
+			from:          []string{status.StatusQueued},
+			wantStatus:    status.StatusBrewing,
+			wantStartedAt: true,
 		},
 		{
 			name:            "brewing -> completed",
@@ -234,13 +236,16 @@ func TestSetStatus(t *testing.T) {
 			var job struct {
 				Status      string       `db:"status"`
 				CompletedAt sql.NullTime `db:"completed_at"`
+				StartedAt   sql.NullTime `db:"started_at"`
 			}
-			err = testDB.Get(&job, "SELECT status, completed_at FROM brewing_jobs WHERE public_id = $1", uuid)
+			err = testDB.Get(&job, "SELECT status, completed_at, started_at FROM brewing_jobs WHERE public_id = $1", uuid)
 			if err != nil {
 				t.Fatalf("read job: %v", err)
 			}
+
 			assert.Equal(t, tt.wantStatus, job.Status)
 			assert.Equal(t, tt.wantCompletedAt, job.CompletedAt.Valid)
+			assert.Equal(t, tt.wantStartedAt, job.StartedAt.Valid)
 		})
 	}
 

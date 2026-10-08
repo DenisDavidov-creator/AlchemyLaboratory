@@ -25,7 +25,7 @@ func NewPtransactor(db *sqlx.DB) *PTransactor {
 	}
 }
 func (t *PTransactor) WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	tx, err := t.db.Beginx()
+	tx, err := t.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}

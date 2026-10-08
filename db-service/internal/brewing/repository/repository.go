@@ -80,6 +80,9 @@ func (r *BrewingRepo) SetStatus(ctx context.Context, uuid, status string, from [
 			status = $1::text,
 			completed_at = CASE
 				WHEN $1::text IN ('completed', 'failed') THEN now()
+			END,
+			started_at = CASE 
+				WHEN $1::text = 'brewing' THEN NOW() ELSE started_at 
 			END
 		WHERE 
 			public_id = $2 AND status = ANY($3)

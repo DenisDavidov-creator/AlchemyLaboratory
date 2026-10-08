@@ -1,0 +1,2 @@
+ALTER TABLE brewing_jobs 
+ADD started_at TIMESTAMP WITH TIME ZONE

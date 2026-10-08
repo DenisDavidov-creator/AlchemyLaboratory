@@ -294,9 +294,9 @@ func (r *AlchemyRepository) CheckingIngridients(ctx context.Context, ings []mode
 		var newQuantity int
 		var err error
 		if tx != nil {
-			err = tx.QueryRow(query, value.QuantityNeeded, value.IngredientID).Scan(&newQuantity)
+			err = tx.QueryRowContext(ctx, query, value.QuantityNeeded, value.IngredientID).Scan(&newQuantity)
 		} else {
-			err = r.db.QueryRow(query, value.QuantityNeeded, value.IngredientID).Scan(&newQuantity)
+			err = r.db.QueryRowContext(ctx, query, value.QuantityNeeded, value.IngredientID).Scan(&newQuantity)
 		}
 
 		if err != nil {
