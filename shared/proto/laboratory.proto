@@ -89,4 +89,5 @@ message ChangeJobStatus {
 
 message JobTime {
     int32 brewingTime = 1;
+    bool resumed = 2;
 }

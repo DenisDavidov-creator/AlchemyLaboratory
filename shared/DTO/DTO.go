@@ -63,7 +63,8 @@ type JobStatusresponseDTO struct {
 }
 
 type JobTimeDTO struct {
-	BrweingTime int `json:"brewing_time"`
+	BrweingTime int  `json:"brewing_time"`
+	Resumed     bool `json:"resumed"`
 }
 
 type JobStatusDTO struct {

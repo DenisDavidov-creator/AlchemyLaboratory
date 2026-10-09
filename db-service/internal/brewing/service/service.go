@@ -9,6 +9,7 @@ import (
 	"alla/shared/errorList"
 	status "alla/shared/status"
 	"context"
+	"errors"
 	"fmt"
 )
 
@@ -89,6 +90,15 @@ func (s *BrewingService) StartBrewing(ctx context.Context, uuid dto.JobUUIDDTO) 
 	})
 
 	if err != nil {
+		if errors.Is(err, errorList.ErrInvalidStatusTransition) {
+			stat, remaining, err := s.BrewingRepo.GetRemaining(ctx, uuid.JobUUID)
+			if err != nil {
+				return nil, fmt.Errorf("StartBrewing: %w", err)
+			}
+			if stat == status.StatusBrewing {
+				return &dto.JobTimeDTO{BrweingTime: remaining, Resumed: true}, nil
+			}
+		}
 		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 

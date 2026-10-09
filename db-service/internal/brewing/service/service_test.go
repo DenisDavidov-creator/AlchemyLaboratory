@@ -25,10 +25,12 @@ func TestStartBrewing(t *testing.T) {
 		Name          string
 		expectedError error
 		ings          []models.RecipeIngredients
-		brewingTime   int
+		wantTime      int
 		UUID          dto.JobUUIDDTO
 		status        string
 		from          []string
+		resumed       bool
+		currentStatus string
 	}{
 		{
 			Name:          "Success",
@@ -43,10 +45,49 @@ func TestStartBrewing(t *testing.T) {
 					QuantityNeeded: 4,
 				},
 			},
-			brewingTime: 10,
-			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
-			status:      status.StatusBrewing,
-			from:        []string{status.StatusQueued},
+			wantTime: 10,
+			resumed:  false,
+			UUID:     dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:   status.StatusBrewing,
+			from:     []string{status.StatusQueued},
+		},
+		{
+			Name: "brewing in process",
+			ings: []models.RecipeIngredients{
+				{
+					IngredientID:   1,
+					QuantityNeeded: 2,
+				},
+				{
+					IngredientID:   2,
+					QuantityNeeded: 4,
+				},
+			},
+			wantTime:      4,
+			resumed:       true,
+			UUID:          dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:        status.StatusBrewing,
+			from:          []string{status.StatusQueued},
+			currentStatus: status.StatusBrewing,
+		},
+		{
+			Name:          "Error - job already completed",
+			expectedError: errorList.ErrInvalidStatusTransition,
+			ings: []models.RecipeIngredients{
+				{
+					IngredientID:   1,
+					QuantityNeeded: 2,
+				},
+				{
+					IngredientID:   2,
+					QuantityNeeded: 4,
+				},
+			},
+			wantTime:      10,
+			UUID:          dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:        status.StatusBrewing,
+			from:          []string{status.StatusQueued},
+			currentStatus: status.StatusCompleted,
 		},
 		{
 			Name:          "Error - recipe not found",
@@ -66,10 +107,10 @@ func TestStartBrewing(t *testing.T) {
 					QuantityNeeded: 4,
 				},
 			},
-			brewingTime: 10,
-			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
-			status:      "brewing",
-			from:        []string{"queued"},
+			wantTime: 10,
+			UUID:     dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:   "brewing",
+			from:     []string{"queued"},
 		},
 		{
 			Name:          "Error - wrong set status",
@@ -84,10 +125,10 @@ func TestStartBrewing(t *testing.T) {
 					QuantityNeeded: 4,
 				},
 			},
-			brewingTime: 10,
-			UUID:        dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
-			status:      "brewing",
-			from:        []string{"queued"},
+			wantTime: 10,
+			UUID:     dto.JobUUIDDTO{JobUUID: "I want to be a cat"},
+			status:   "brewing",
+			from:     []string{"queued"},
 		},
 	}
 	for _, tt := range tests {
@@ -100,7 +141,7 @@ func TestStartBrewing(t *testing.T) {
 			case "Success":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, nil)
 				alchemyMockRepo.On("GetIngredientsByRecipe", context.Background(), 1).Return(tt.ings, nil)
-				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.brewingTime, nil)
+				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.wantTime, nil)
 				mockTrans.On("WithinTransaction", context.Background(), mock.AnythingOfType("func(context.Context) error")).
 					Run(func(args mock.Arguments) {
 						fn := args.Get(1).(func(context.Context) error)
@@ -109,13 +150,39 @@ func TestStartBrewing(t *testing.T) {
 					Return(nil)
 				alchemyMockRepo.On("CheckingIngridients", context.Background(), tt.ings).Return(nil)
 				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(nil)
+			case "brewing in process":
+				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, nil)
+				alchemyMockRepo.On("GetIngredientsByRecipe", context.Background(), 1).Return(tt.ings, nil)
+				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.wantTime, nil)
+				mockTrans.On("WithinTransaction", context.Background(), mock.AnythingOfType("func(context.Context) error")).
+					Run(func(args mock.Arguments) {
+						fn := args.Get(1).(func(context.Context) error)
+						fn(context.Background())
+					}).
+					Return(errorList.ErrInvalidStatusTransition)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(errorList.ErrInvalidStatusTransition)
+				brewingMockRepo.On("GetRemaining", context.Background(), tt.UUID.JobUUID).Return(tt.currentStatus, tt.wantTime, nil)
+
+			case "Error - job already completed":
+				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, nil)
+				alchemyMockRepo.On("GetIngredientsByRecipe", context.Background(), 1).Return(tt.ings, nil)
+				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.wantTime, nil)
+				mockTrans.On("WithinTransaction", context.Background(), mock.AnythingOfType("func(context.Context) error")).
+					Run(func(args mock.Arguments) {
+						fn := args.Get(1).(func(context.Context) error)
+						fn(context.Background())
+					}).
+					Return(errorList.ErrInvalidStatusTransition)
+				brewingMockRepo.On("SetStatus", context.Background(), tt.UUID.JobUUID, tt.status, tt.from).Return(errorList.ErrInvalidStatusTransition)
+				brewingMockRepo.On("GetRemaining", context.Background(), tt.UUID.JobUUID).Return(tt.currentStatus, 0, nil)
+
 			case "Error - recipe not found":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, errorList.ErrRecipeNotFound)
 
 			case "Error - not enough ingredients":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, nil)
 				alchemyMockRepo.On("GetIngredientsByRecipe", context.Background(), 1).Return(tt.ings, nil)
-				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.brewingTime, nil)
+				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.wantTime, nil)
 				mockTrans.On("WithinTransaction", context.Background(), mock.AnythingOfType("func(context.Context) error")).
 					Run(func(args mock.Arguments) {
 						fn := args.Get(1).(func(context.Context) error)
@@ -128,7 +195,7 @@ func TestStartBrewing(t *testing.T) {
 			case "Error - wrong set status":
 				alchemyMockRepo.On("GetRecipeID", context.Background(), tt.UUID.JobUUID).Return(1, nil)
 				alchemyMockRepo.On("GetIngredientsByRecipe", context.Background(), 1).Return(tt.ings, nil)
-				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.brewingTime, nil)
+				alchemyMockRepo.On("GetBrewingTime", context.Background(), 1).Return(tt.wantTime, nil)
 				mockTrans.On("WithinTransaction", context.Background(), mock.AnythingOfType("func(context.Context) error")).
 					Run(func(args mock.Arguments) {
 						fn := args.Get(1).(func(context.Context) error)
@@ -147,7 +214,8 @@ func TestStartBrewing(t *testing.T) {
 				return
 			}
 			assert.NoError(t, err)
-			assert.Equal(t, tt.brewingTime, brewingTime.BrweingTime)
+			assert.Equal(t, tt.wantTime, brewingTime.BrweingTime)
+			assert.Equal(t, tt.resumed, brewingTime.Resumed)
 		})
 
 	}

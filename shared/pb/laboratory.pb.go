@@ -717,6 +717,7 @@ func (x *ChangeJobStatus) GetStatus() string {
 type JobTime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	BrewingTime   int32                  `protobuf:"varint,1,opt,name=brewingTime,proto3" json:"brewingTime,omitempty"`
+	Resumed       bool                   `protobuf:"varint,2,opt,name=resumed,proto3" json:"resumed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -756,6 +757,13 @@ func (x *JobTime) GetBrewingTime() int32 {
 		return x.BrewingTime
 	}
 	return 0
+}
+
+func (x *JobTime) GetResumed() bool {
+	if x != nil {
+		return x.Resumed
+	}
+	return false
 }
 
 var File_shared_proto_laboratory_proto protoreflect.FileDescriptor
@@ -804,9 +812,10 @@ const file_shared_proto_laboratory_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\tR\x06status\"=\n" +
 	"\x0fChangeJobStatus\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"+\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"E\n" +
 	"\aJobTime\x12 \n" +
-	"\vbrewingTime\x18\x01 \x01(\x05R\vbrewingTime2\xfb\x01\n" +
+	"\vbrewingTime\x18\x01 \x01(\x05R\vbrewingTime\x12\x18\n" +
+	"\aresumed\x18\x02 \x01(\bR\aresumed2\xfb\x01\n" +
 	"\x11IngredientService\x12W\n" +
 	"\x10CreateIngredient\x12#.laboratory.CreateIngredientRequest\x1a\x1e.laboratory.IngredientResponse\x12G\n" +
 	"\x0eGetIngredients\x12\x11.laboratory.Empty\x1a\".laboratory.IngredientListResponse\x12D\n" +

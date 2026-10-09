@@ -61,7 +61,7 @@ func (h *GrpcBrewingHandler) StartBrewing(ctx context.Context, req *pb.JobUUID) 
 		return nil, grpcStatus.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.JobTime{BrewingTime: int32(resp.BrweingTime)}, nil
+	return &pb.JobTime{BrewingTime: int32(resp.BrweingTime), Resumed: resp.Resumed}, nil
 }
 
 func (h *GrpcBrewingHandler) ChangeStatus(ctx context.Context, req *pb.ChangeJobStatus) (*pb.Empty, error) {
