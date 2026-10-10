@@ -8,6 +8,8 @@ import (
 	brewingRepo "alla/api-service/internal/brewing/repository"
 	brewingService "alla/api-service/internal/brewing/service"
 	"alla/api-service/internal/server"
+	"errors"
+	"io/fs"
 	"log/slog"
 
 	pb "alla/shared/pb"
@@ -30,7 +32,7 @@ func main() {
 	logger := NewLogger()
 
 	err := gotenv.Load()
-	if err != nil {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		logger.Error("get .env", slog.String("error", err.Error()))
 		os.Exit(1)
 	}

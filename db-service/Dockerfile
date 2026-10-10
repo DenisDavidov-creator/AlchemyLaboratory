@@ -16,6 +16,5 @@ RUN wget -q -O /bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-hea
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /app/db-service/main .
-COPY --from=builder /app/db-service/.env . 
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
 CMD ["./main"]

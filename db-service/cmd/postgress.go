@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 
@@ -11,8 +13,8 @@ import (
 
 func connectToDB(logger *slog.Logger) *sqlx.DB {
 	err := gotenv.Load()
-	if err != nil {
-		logger.Error("Error get ENV", slog.String("Error", err.Error()))
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		logger.Error("get .env", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 

@@ -13,7 +13,6 @@ RUN go build -o main ./cmd/
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /app/api-service/main .
-COPY --from=builder /app/api-service/.env .  
 
 CMD ["./main"]
 

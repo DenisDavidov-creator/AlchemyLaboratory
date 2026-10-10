@@ -6,7 +6,9 @@ import (
 	"alla/worker-service/internal/pool"
 	"alla/worker-service/metrics"
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -30,10 +32,8 @@ func main() {
 	logger := NewLogger()
 
 	err := gotenv.Load()
-	if err != nil {
-		logger.Error("Failed get ENV",
-			slog.String("err", err.Error()),
-		)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		logger.Error("get .env", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
