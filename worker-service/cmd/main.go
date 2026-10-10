@@ -65,7 +65,7 @@ func run(logger *slog.Logger) error {
 
 	repoBrewing := repository.NewRepoBrewing(brewingClient)
 
-	serviceBrewing := service.NewBoilerWorker(repoBrewing)
+	serviceBrewing := service.NewBoilerWorker(repoBrewing, time.Second*10)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()

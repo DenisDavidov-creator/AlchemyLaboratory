@@ -17,17 +17,19 @@ type ServiceInterface interface {
 }
 
 type ServiceWorker struct {
-	repo repository.RepositoryBrewingInterface
+	repo      repository.RepositoryBrewingInterface
+	extraWait time.Duration
 }
 
-func NewBoilerWorker(repo repository.RepositoryBrewingInterface) *ServiceWorker {
+func NewBoilerWorker(repo repository.RepositoryBrewingInterface, extraWait time.Duration) *ServiceWorker {
 	return &ServiceWorker{
-		repo: repo,
+		repo:      repo,
+		extraWait: extraWait,
 	}
 }
 
 func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
-	timeSeconds, err := w.repo.StartBrewing(ctx, uuid)
+	resp, err := w.repo.StartBrewing(ctx, uuid)
 	changeStatus := dto.JobStatusDTO{
 		UUID:   uuid.JobUUID,
 		Status: status.StatusFailed,
@@ -42,8 +44,22 @@ func (w *ServiceWorker) Boiled(ctx context.Context, uuid dto.JobUUIDDTO) error {
 		return err
 	}
 
+	if resp.Resumed {
+		select {
+		case <-time.After(time.Duration(resp.BrweingTime)*time.Second + w.extraWait):
+			err := w.MarkFailed(ctx, uuid)
+			if err != nil && !errors.Is(err, errorList.ErrInvalidStatusTransition) {
+				return err
+			}
+			return errorList.ErrInvalidStatusTransition
+
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
 	select {
-	case <-time.After(time.Duration(timeSeconds.BrweingTime) * time.Second):
+	case <-time.After(time.Duration(resp.BrweingTime) * time.Second):
 	case <-ctx.Done():
 		return ctx.Err()
 	}

@@ -40,7 +40,7 @@ func (r *repoBrewing) StartBrewing(ctx context.Context, req dto.JobUUIDDTO) (*dt
 		return nil, fmt.Errorf("StartBrewing: %w", err)
 	}
 
-	return &dto.JobTimeDTO{BrweingTime: int(resp.BrewingTime)}, nil
+	return &dto.JobTimeDTO{BrweingTime: int(resp.BrewingTime), Resumed: resp.Resumed}, nil
 
 }
 func (r *repoBrewing) SetStatus(ctx context.Context, req dto.JobStatusDTO) error {

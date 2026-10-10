@@ -78,12 +78,42 @@ func TestBoiled(t *testing.T) {
 			},
 			expectedError: context.Canceled,
 		},
+		{
+			name: "brewer dead",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0, Resumed: true}, nil).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusFailed}).
+					Return(nil).Once()
+			},
+			expectedError: errorList.ErrInvalidStatusTransition,
+		},
+		{
+			name: "brewer completed",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0, Resumed: true}, nil).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusFailed}).
+					Return(errorList.ErrInvalidStatusTransition).Once()
+			},
+			expectedError: errorList.ErrInvalidStatusTransition,
+		},
+		{
+			name: "brewer db-error",
+			setupMock: func(m *mocks.RepositoryBrewingInterface) {
+				m.On("StartBrewing", mock.Anything, uuid).
+					Return(&dto.JobTimeDTO{BrweingTime: 0, Resumed: true}, nil).Once()
+				m.On("SetStatus", mock.Anything, dto.JobStatusDTO{UUID: uuid.JobUUID, Status: status.StatusFailed}).
+					Return(DB_ERROR).Once()
+			},
+			expectedError: DB_ERROR,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := mocks.NewRepositoryBrewingInterface(t)
-			workerServ := service.NewBoilerWorker(mockRepo)
+			workerServ := service.NewBoilerWorker(mockRepo, 0)
 
 			tt.setupMock(mockRepo)
 
